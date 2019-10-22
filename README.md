@@ -8,6 +8,7 @@ node index.js
 Remember to:
 1. Have node installed
 2. npm install <package-name> for any package you include
+3. Make sure you're working on your own branch and not master
 
 Steps to implement:
 1. Read input from user
