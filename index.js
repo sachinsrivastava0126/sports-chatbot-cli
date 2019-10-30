@@ -39,11 +39,24 @@ standard_input.on('data', function (data) {
                  "method": "GET"
              }, (err, res, body) => {
 
-                let messageText = JSON.parse(body).articles[0].content.split(' [')[0].brightWhite.bgBlue;
-                let messageURL = JSON.parse(body).articles[0].url.underline.brightRed;
+                let articles = JSON.parse(body).articles;
+
+                 if (articles.length > 0) {
+                    let messageText = JSON.parse(body).articles[0].content.split(' [')[0].brightWhite.bgBlue;
+                    let messageURL = JSON.parse(body).articles[0].url.underline.brightRed;
+
+                    console.log("\n\nCHECK IT OUT:".green.bold+"\n"+messageURL+"\n"+messageText+"\n^Read more at link above^\n".zebra+"\n\n");
+                    
+                } else {
+                    console.log("\n\n"+"Hmm...I'm pretty dumb so I didn't find anything recent on the ".white.bold.bgRed+team.white.bold.bgRed+". Try asking Google!".white.bold.bgRed+"\n\n");
+                     
+                }
+               
 
 
-                 console.log("\n\nCHECK IT OUT:".green.bold+"\n"+messageURL+"\n"+messageText+"\n^Read more at link above^\n".zebra+"\n\n");
+               
+
+                 
 
                  if (err){
                      console.log("News API Error: ", err);
@@ -52,3 +65,13 @@ standard_input.on('data', function (data) {
         });
     }
 });
+
+
+// 
+function checkQueryType (q) {
+    
+}
+
+
+
+
