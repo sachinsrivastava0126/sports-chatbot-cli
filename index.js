@@ -67,9 +67,32 @@ standard_input.on('data', function (data) {
 });
 
 
-// 
+// checks what kind of query user has entered and returns some corresponding identifier
 function checkQueryType (q) {
     
+}
+
+// extracts team name from string and returns it (string)
+function extractTeamName(s) {
+
+}
+
+// gets score given a team and returns json object containing it/game info
+function getTeamScore(team) {
+
+
+}
+
+// checks if there is a game on for given team and returns true if so else false
+function checkGameOn(team) {
+
+}
+
+
+// gets latest news for a team and returns json object containing said news info
+function getTeamNews(team) {
+
+
 }
 
 
