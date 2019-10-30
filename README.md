@@ -15,3 +15,10 @@ Steps to implement:
 2. Parse input (extract relevant info like team name)
 3. Make request to Google News API
 4. Print response to command line
+
+
+
+
+NOTE: customSearch.js is run differently
+
+node customSearch.js <query>
