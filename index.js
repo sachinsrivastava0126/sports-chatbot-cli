@@ -68,6 +68,7 @@ standard_input.on('data', function (data) {
 
 
 // checks what kind of query user has entered and returns some corresponding identifier
+// returns either playerQuery or teamQuery
 function checkQueryType (q) {
     
 }
@@ -78,18 +79,21 @@ function extractTeamName(s) {
 }
 
 // gets score given a team and returns json object containing it/game info
+// Maybe ESPN API?
 function getTeamScore(team) {
 
 
 }
 
 // checks if there is a game on for given team and returns true if so else false
+// ESPN API?
 function checkGameOn(team) {
 
 }
 
 
 // gets latest news for a team and returns json object containing said news info
+// Google News API?
 function getTeamNews(team) {
 
 
