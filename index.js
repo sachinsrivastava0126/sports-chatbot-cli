@@ -30,7 +30,7 @@ standard_input.on('data', function (data) {
         process.exit();
     }else
     {
-        
+
 
         let team = data.split('the ')[1].split(' ')[0];
 
@@ -46,17 +46,17 @@ standard_input.on('data', function (data) {
                     let messageURL = JSON.parse(body).articles[0].url.underline.brightRed;
 
                     console.log("\n\nCHECK IT OUT:".green.bold+"\n"+messageURL+"\n"+messageText+"\n^Read more at link above^\n".zebra+"\n\n");
-                    
+
                 } else {
                     console.log("\n\n"+"Hmm...I'm pretty dumb so I didn't find anything recent on the ".white.bold.bgRed+team.white.bold.bgRed+". Try asking Google!".white.bold.bgRed+"\n\n");
-                     
+
                 }
-               
 
 
-               
 
-                 
+
+
+
 
                  if (err){
                      console.log("News API Error: ", err);
@@ -70,12 +70,21 @@ standard_input.on('data', function (data) {
 // checks what kind of query user has entered and returns some corresponding identifier
 // returns either playerQuery or teamQuery
 function checkQueryType (q) {
-    
+
 }
 
 // extracts team name from string and returns it (string)
 function extractTeamName(s) {
+  var teams = ["Cubs", "Yankees", "Astros"];
 
+  var sep = s.split(" ");
+
+  for (i = 0; i < teams.length; i++) {
+    if (teams.contains(sep[i])) {
+      return(word);
+    }
+  }
+  return("");
 }
 
 // gets score given a team and returns json object containing it/game info
@@ -98,7 +107,3 @@ function getTeamNews(team) {
 
 
 }
-
-
-
-
