@@ -79,8 +79,9 @@ function extractTeamName(s) {
 
   var sep = s.split(" ");
 
-  for (i = 0; i < teams.length; i++) {
-    if (teams.contains(sep[i])) {
+  for (i = 0; i < sep.length; i++) {
+    word = sep[i];
+    if (teams.contains(word)) {
       return(word);
     }
   }
