@@ -6,8 +6,6 @@ const GOOGLE_NEWS_API_KEY = 'e4c8bfe9aacf4ec0982da7220a8ca021';
 const
   request = require('request');
 
-var colors = require('colors');
-
 
 
 
@@ -79,9 +77,9 @@ function extractTeamName(s) {
 
   var sep = s.split(" ");
 
-  for (i = 0; i < sep.length; i++) {
-    word = sep[i];
-    if (teams.contains(word)) {
+  for (var i = 0; i < sep.length; i++) {
+    var word = sep[i];
+    if (teams.includes(word)) {
       return(word);
     }
   }
