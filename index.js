@@ -8,8 +8,23 @@ const request = require('request');
 const https = require('https');
 const colors = require('colors');
 
+
+
+/*
+
+    NOV. 6 CLASS NOTES:
+    - WE STILL WANT NEWS STORIES SO INSTEAD OF JUST RETURNING SCORE OR STANDINGS RETURN NEWS STORY MAYBE USING
+    THAT INFO?
+    - SET UP FIREBASE
+
+
+*/
+
+
+
+
 //read in data
-//****** TO-DO: NEED TO FIGURE OUT HOW TO READ THIS FROM FILE INSTEAD OF DOING THIS*****//// 
+//****** TO-DO: NEED TO FIGURE OUT HOW TO READ THIS FROM FILE INSTEAD OF DOING THIS *****//// 
 let allData = {
     "nfl": {
         "teams": 
