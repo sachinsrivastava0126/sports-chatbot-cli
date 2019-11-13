@@ -18,22 +18,22 @@
 					    "first_name": "Tom",
 					    "display_name": "Tom Brady",
 					    "position": "QB",
-					    "uniform_number": 12,
+					    "uniform_number": 12
 					},
 					{
 					    "last_name" : "White",
 					    "first_name": "James",
 					    "display_name": "James White",
 					    "position": "RB",
-					    "uniform_number": 28,
+					    "uniform_number": 28
 					},
 					{
 					    "last_name" : "Edelman",
 					    "first_name": "Julian",
 					    "display_name": "Julian Edelman",
 					    "position": "WR",
-					    "uniform_number": 11,
-					},
+					    "uniform_number": 11
+					}
 				]
 			},
 			{
@@ -52,22 +52,22 @@
 					    "first_name": "Lamar",
 					    "display_name": "Lamar Jackson",
 					    "position": "QB",
-					    "uniform_number": 8,
+					    "uniform_number": 8
 					},
 					{
 					    "last_name" : "Ingram",
 					    "first_name": "Mark",
 					    "display_name": "Mark Ingram",
 					    "position": "RB",
-					    "uniform_number": 21,
+					    "uniform_number": 21
 					},
 					{
 					    "last_name" : "Brown",
 					    "first_name": "Marquise",
 					    "display_name": "Marquise Brown",
 					    "position": "WR",
-					    "uniform_number": 15,
-					},
+					    "uniform_number": 15
+					}
 				]
 			},
 			{
@@ -86,27 +86,33 @@
 					    "first_name": "Dak",
 					    "display_name": "Dak Prescott",
 					    "position": "QB",
-					    "uniform_number": 4,
+					    "uniform_number": 4
 					},
 					{
 					    "last_name" : "Elliot",
 					    "first_name": "Ezekiel",
 					    "display_name": "Ezekiel Elliot",
 					    "position": "RB",
-					    "uniform_number": 21,
+					    "uniform_number": 21
 					},
 					{
 					    "last_name" : "Cooper",
 					    "first_name": "Amari",
 					    "display_name": "Amari Cooper",
 					    "position": "WR",
-					    "uniform_number": 19,
-					},
+					    "uniform_number": 19
+					}
 				]
 			}
 		]
 	},
-	"mlb": {},
-	"nba": {},
-	"nhl": {}
+	"mlb": {
+		"teams": []
+	},
+	"nba": {
+		"teams": []
+	},
+	"nhl": {
+		"teams": []
+	}
 }

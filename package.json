@@ -1,0 +1,22 @@
+{
+  "name": "sports-chatbot-cli",
+  "version": "1.0.0",
+  "description": "sports news chatbot cli",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sachinsrivastava0126/sports-chatbot-cli.git"
+  },
+  "author": "Sachin Srivastava",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/sachinsrivastava0126/sports-chatbot-cli/issues"
+  },
+  "homepage": "https://github.com/sachinsrivastava0126/sports-chatbot-cli#readme",
+  "dependencies": {
+    "firebase": "^7.3.0"
+  }
+}

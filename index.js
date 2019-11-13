@@ -1,13 +1,42 @@
 'use strict';
 
+
+// Google News API Info
 const GOOGLE_NEWS_API_BASE_URL = 'https://newsapi.org/v2/';
 const GOOGLE_NEWS_API_KEY = 'e4c8bfe9aacf4ec0982da7220a8ca021';
 
-// const fs = require('fs'); // this is for reading in from data.json which doesn't work for some reason
+
+// Google Custom Search API Info in Case We Need It
+const GOOGLE_CUSTOM_SEARCH_API_BASE_URL = 'https://www.googleapis.com/customsearch/v1/';
+const GOOGLE_CUSTOM_SEARCH_API_KEY = 'AIzaSyCUbWoXNZUiibhw49L0ZkrAby_Q8AiVDJw';
+const GOOGLE_CUSTOM_SEARCH_ENGINE_ID = '010357174998574324875:z3qkqr1eegz';
+
 const request = require('request');
 const https = require('https');
 const colors = require('colors');
+// var allData = require('./data.json');
+var firebase = require('firebase');
 
+
+var config = {
+    apiKey: "AIzaSyALnqLN4Xj59z_G5FwvpDjOL7cB9Od7moI",
+    authDomain: "sports-chatbot-cli.firebaseapp.com",
+    databaseURL: "https://sports-chatbot-cli.firebaseio.com",
+    storageBucket: "sports-chatbot-cli.appspot.com"
+};
+firebase.initializeApp(config);
+
+// Get a reference to the database service
+var db = firebase.database();
+var allData;
+
+// Load the data and print to console ***** TO DO: ADD THIS LOGIC TO isPlayer, isTeam, etc functions *****
+const handleData = snap => {
+  if (snap.val()) {
+    allData = snap.val();
+  }
+}
+db.ref().on('value', handleData, error => console.log(error));
 
 
 /*
@@ -23,120 +52,6 @@ const colors = require('colors');
 
 
 
-//read in data
-//****** TO-DO: NEED TO FIGURE OUT HOW TO READ THIS FROM FILE INSTEAD OF DOING THIS *****//// 
-let allData = {
-    "nfl": {
-        "teams": 
-        [
-            {
-                "team_id" : "new-england-patriots",
-                "abbreviation" : "NE",
-                "conference" : "AFC",
-                "division": "east",
-                "first_name" : "New England",
-                "last_name" : "Patriots",
-                "nick_name" : "Pats",
-                "city" : "New England",
-                "full_name" : "New England Patriots",
-                "players": [
-                    {
-                        "last_name" : "Brady",
-                        "first_name": "Tom",
-                        "display_name": "Tom Brady",
-                        "position": "QB",
-                        "uniform_number": 12,
-                    },
-                    {
-                        "last_name" : "White",
-                        "first_name": "James",
-                        "display_name": "James White",
-                        "position": "RB",
-                        "uniform_number": 28,
-                    },
-                    {
-                        "last_name" : "Edelman",
-                        "first_name": "Julian",
-                        "display_name": "Julian Edelman",
-                        "position": "WR",
-                        "uniform_number": 11,
-                    },
-                ]
-            },
-            {
-                "team_id" : "baltimore-ravens",
-                "abbreviation" : "BAL",
-                "conference" : "AFC",
-                "division": "north",
-                "first_name" : "Baltimore",
-                "last_name" : "Ravens",
-                "nick_name" : "Ravens",
-                "city" : "Baltimore",
-                "full_name" : "Baltimore Ravens",
-                "players": [
-                    {
-                        "last_name" : "Jackson",
-                        "first_name": "Lamar",
-                        "display_name": "Lamar Jackson",
-                        "position": "QB",
-                        "uniform_number": 8,
-                    },
-                    {
-                        "last_name" : "Ingram",
-                        "first_name": "Mark",
-                        "display_name": "Mark Ingram",
-                        "position": "RB",
-                        "uniform_number": 21,
-                    },
-                    {
-                        "last_name" : "Brown",
-                        "first_name": "Marquise",
-                        "display_name": "Marquise Brown",
-                        "position": "WR",
-                        "uniform_number": 15,
-                    },
-                ]
-            },
-            {
-                "team_id" : "dallas-cowboys",
-                "abbreviation" : "DAL",
-                "conference" : "NFC",
-                "division": "east",
-                "first_name" : "Dallas",
-                "last_name" : "Cowboys",
-                "nick_name" : "The Boys",
-                "city" : "Dallas",
-                "full_name" : "Dallas Cowboys",
-                "players": [
-                    {
-                        "last_name" : "Prescott",
-                        "first_name": "Dak",
-                        "display_name": "Dak Prescott",
-                        "position": "QB",
-                        "uniform_number": 4,
-                    },
-                    {
-                        "last_name" : "Elliot",
-                        "first_name": "Ezekiel",
-                        "display_name": "Ezekiel Elliot",
-                        "position": "RB",
-                        "uniform_number": 21,
-                    },
-                    {
-                        "last_name" : "Cooper",
-                        "first_name": "Amari",
-                        "display_name": "Amari Cooper",
-                        "position": "WR",
-                        "uniform_number": 19,
-                    },
-                ]
-            }
-        ]
-    },
-    "mlb": {},
-    "nba": {},
-    "nhl": {}
-};
 
 
 
@@ -609,40 +524,77 @@ function getPrevWeekScore(team, schedule, prevWeek) {
 
           
 
+            let higherScore = teamScore > opposingScore ? teamScore : opposingScore;
+            let lowerScore = teamScore <= opposingScore ? teamScore : opposingScore;
+
+
+
+            // ***************** TO DO: PUT THIS IN A FUNCTION ***************** //
+            request({
+                 "url": `${GOOGLE_NEWS_API_BASE_URL}everything?apiKey=${GOOGLE_NEWS_API_KEY}&q=`+teamName.split(' ')[1]+"+"+opposingName.split(' ')[1]+"+"+higherScore+"-"+lowerScore,
+                 "method": "GET"
+                }, (err, res, body) => {
+
+
+                let articles = JSON.parse(body).articles;
+                let numArticles = articles.length;
+
+                 if (numArticles > 0) {
+                    console.log("\n\nHere are the latest headlines for the".green.bold+" "+team.green.bold+":");
+                    for (var i=0; i < numArticles; i++) {
+
+                        if (articles[i].title.includes(higherScore+"-"+lowerScore) || articles[i].description.includes(higherScore+"-"+lowerScore)) {
+                            
+
+                            // ***************** TO DO: FORMAT THIS NICELY SO PRINTS PRETTY IN CONSOLE ***************** //
+                            console.log(articles[i])
+                        }
+                    }
+                    
+                } else {
+                    console.log("\n\n"+"Hmm...I'm pretty dumb so I didn't find anything recent on the ".white.bold.bgRed+team.white.bold.bgRed+". Try asking Google!".white.bold.bgRed+"\n\n");
+                     
+                }
+            
+                 if (err){
+                     console.log("News API Error: ", err);
+                 }
+            });
+
             // Respond according to how big the win/loss was
-            if (teamScore >= opposingScore + 14) {
+            // if (teamScore >= opposingScore + 14) {
 
-                console.log("The "+teamName+" TOTALLY SMACKED the "+opposingName+" by a score of "+teamScore+" to "+opposingScore+" "+dateInfo+"!!!");
+            //     console.log("The "+teamName+" TOTALLY SMACKED the "+opposingName+" by a score of "+teamScore+" to "+opposingScore+" "+dateInfo+"!!!");
 
-            } else if (teamScore >= opposingScore + 10 && teamScore < opposingScore + 14) {
+            // } else if (teamScore >= opposingScore + 10 && teamScore < opposingScore + 14) {
 
-                console.log("The "+teamName+" handily beat the "+opposingName+" "+teamScore+" to "+opposingScore+" "+dateInfo+".");
+            //     console.log("The "+teamName+" handily beat the "+opposingName+" "+teamScore+" to "+opposingScore+" "+dateInfo+".");
 
-            } else if (teamScore >= opposingScore + 7 && teamScore < opposingScore + 10) {
+            // } else if (teamScore >= opposingScore + 7 && teamScore < opposingScore + 10) {
 
-                console.log("The "+teamName+" eeked out a "+teamScore+" to "+opposingScore+" win over the "+opposingName+" "+dateInfo+".")
+            //     console.log("The "+teamName+" eeked out a "+teamScore+" to "+opposingScore+" win over the "+opposingName+" "+dateInfo+".")
 
-            } else if (teamScore + 14 <= opposingScore) {
+            // } else if (teamScore + 14 <= opposingScore) {
 
-                console.log("The "+teamName+" got DEMOLISHED the "+opposingName+" by a score of "+opposingScore+" to "+teamScore+" "+dateInfo+". Sucks to suck!!!");
+            //     console.log("The "+teamName+" got DEMOLISHED the "+opposingName+" by a score of "+opposingScore+" to "+teamScore+" "+dateInfo+". Sucks to suck!!!");
 
-            } else if (teamScore + 10 <= opposingScore && teamScore > opposingScore + 14) {
-
-
-                console.log("The "+teamName+" lost to the "+opposingName+" "+opposingScore+" to "+teamScore+" "+dateInfo+".");
+            // } else if (teamScore + 10 <= opposingScore && teamScore > opposingScore + 14) {
 
 
-            } else if (teamScore + 7 <= opposingScore && teamScore > opposingScore + 10) {
+            //     console.log("The "+teamName+" lost to the "+opposingName+" "+opposingScore+" to "+teamScore+" "+dateInfo+".");
 
 
-                console.log("The "+teamName+" fell short to the "+opposingName+" in a close "+opposingScore+" to "+teamScore+" loss"+" "+dateInfo+".");
-
-            } else {
+            // } else if (teamScore + 7 <= opposingScore && teamScore > opposingScore + 10) {
 
 
-                console.log("The "+teamName+" were on the losing end of a nail-biter to the "+opposingName+" with a final score of "+opposingScore+" to "+teamScore+" "+dateInfo+".");
+            //     console.log("The "+teamName+" fell short to the "+opposingName+" in a close "+opposingScore+" to "+teamScore+" loss"+" "+dateInfo+".");
 
-            }
+            // } else {
+
+
+            //     console.log("The "+teamName+" were on the losing end of a nail-biter to the "+opposingName+" with a final score of "+opposingScore+" to "+teamScore+" "+dateInfo+".");
+
+            // }
 
 
         }
@@ -706,12 +658,17 @@ function getTheLatest(data, queryType) {
             // 1. need to check if game on
             // 2. if game on then return score
             // 3. if game not on then return recent news
+            console.log('team!')
             
 
 
         } else if (isPlayer(name)) {
 
+            console.log('player!')
+
         } else if (isCity(name)) {
+
+            console.log('city!')
 
         }
 
