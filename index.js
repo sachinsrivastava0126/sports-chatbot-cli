@@ -148,6 +148,7 @@ function isPlayer(s) {
     let allPlayers = [];
     let allTeams = allData.nfl.teams;
     let numTeams = allTeams.length;
+    let playerTeam;
 
     for (var i = 0; i < numTeams; i++) {
 
@@ -156,18 +157,21 @@ function isPlayer(s) {
 
             for (var j = 0; j < numTeamPlayers; j++) {
 
-                allPlayers.push(allTeams[i].players[j].display_name);
+                allPlayers.push([allTeams[i].players[j].display_name, allTeams[i].last_name]);
 
             }
         }
 
     }
 
-    if (allPlayers.includes(s)) {
-        return true;
-    }
 
-    return false;
+    let numAllPlayerNames = allPlayers.length;
+    for (var k=0; k < numAllPlayerNames; k++) {
+        if (allPlayers[k][0].includes(s)) {
+            return [true, allPlayers[k][1]];
+        }
+    }
+    return [false];
 
 }
 
@@ -182,10 +186,12 @@ function isTeam(s) {
         allTeamNames.push(allTeams[i].nick_name);
     }
 
-    if (allTeamNames.includes(s)) {
-        return true;
+    let teamNamesLength = allTeamNames.length;
+    for (var j = 0; j < teamNamesLength; j++) {
+        if (allTeamNames[j].includes(s)) {
+            return true;
+        }
     }
-
     return false;
 
 }
@@ -243,7 +249,6 @@ function getTeamNews(team) {
                 
             } else {
                 console.log("\n\n"+"Hmm...I'm pretty dumb so I didn't find anything recent on the ".white.bold.bgRed+team.white.bold.bgRed+". Try asking Google!".white.bold.bgRed+"\n\n");
-                 
             }
         
              if (err){
@@ -254,7 +259,332 @@ function getTeamNews(team) {
 }
 
 
-// checks if there is a game on for given team and returns true if so else false
+
+function getPlayerGameStats(player, team, schedule, week) {
+
+    let weekGames = schedule[week].games;
+    let numGames = weekGames.length;
+    let playerPosition;
+    let gameID;
+
+
+    let foundTeam = false;
+
+    // find gameID for the game in which the player and his team were playing in 
+    for (var i = 0; i<numGames; i++ ) {
+        if (weekGames[i].home.name.includes(team) || weekGames[i].away.name.includes(team)) {
+            foundTeam = true;
+            gameID = weekGames[i].id;
+
+        }
+    }
+
+
+    // if we didn't find the team in this week, they must be on a bye so search last week
+    // otherwise get the previous week's games, search for that team's game and return the players stats from most recent game
+    if (!foundTeam) {
+        getPlayerGameStats(player, team, schedule, week-1);
+
+    }
+
+
+
+
+    // First need to find the position of the player because then we can map positions to statistical categories in firebase
+    const playerPositionOptions = {
+        hostname: SPORTS_RADAR_NFL_API_BASE_URL,
+        path: '/nfl/official/trial/v5/en/games/'+gameID+'/roster.json?api_key='+SPORTS_RADAR_NFL_API_KEY,
+        method: 'GET'
+    }
+
+    var wait = ms => new Promise((r, j)=>setTimeout(r, ms));
+    (async () => {
+        await wait(1000);
+
+        const playerPositionReq = https.request(playerPositionOptions, (res) => {
+            console.log('playerposition statusCode: ', res.statusCode);
+
+            // array for bytes
+            let chunks = [];
+
+            res.on('data', function (d) {
+                
+                // append to that array
+                chunks.push(d);
+
+
+            }).on('end', function () {
+                //create buffer from the bytes in the chunks array ONLY AFTER all of it has been received then cast to string and parse JSON object
+                let d = Buffer.concat(chunks);
+                let homePlayers = JSON.parse(d.toString()).home.players;
+                let awayPlayers = JSON.parse(d.toString()).away.players;
+                let allGamePlayers = homePlayers.concat(awayPlayers);
+                let numGamePlayers = allGamePlayers.length;
+
+                // Add something like this to firebase
+                let posToStat = {"WR": "receiving", "QB":  "passing", "RB": "rushing"};
+
+                // Find the position that the player plays and query the mapping in firebase to find out stat. key (e.g. "WR" in NFL maps to "receiving" stats)
+                for (var i = 0; i < numGamePlayers; i++) {
+                    if (allGamePlayers[i].name.includes(player)) {
+
+                        playerPosition = allGamePlayers[i].position;
+
+                    }
+
+                }
+
+                // Get stat category to search for
+                let statCategory = posToStat[playerPosition];
+
+                
+                // check if the game includes the team in question
+                const gameStatsOptions = {
+                    hostname: SPORTS_RADAR_NFL_API_BASE_URL,
+                    path: '/nfl/official/trial/v5/en/games/'+gameID+'/statistics.json?api_key='+SPORTS_RADAR_NFL_API_KEY,
+                    method: 'GET'
+                }
+
+                var wait = ms => new Promise((r, j)=>setTimeout(r, ms));
+                (async () => { 
+
+                    await wait(1000);
+                    const gameStatsReq = https.request(gameStatsOptions, (res) => {
+
+                        console.log('gamestats statusCode: ', res.statusCode);
+
+                        // array for bytes
+                        let chunks = [];
+
+                        res.on('data', function (d) {
+                            
+                            // append to that array
+                            chunks.push(d);
+
+
+
+                        }).on('end', function () {
+                            //create buffer from the bytes in the chunks array ONLY AFTER all of it has been received then cast to string and parse JSON object
+                            let d = Buffer.concat(chunks);
+                            // let homePlayerStats = JSON.parse(d.toString()).statistics.home;
+                            // let awayPlayerStats = JSON.parse(d.toString()).statistics.away;
+                            // let allPlayerStats = homePlayerStats.concat(awayPlayerStats);
+                            // let numPlayerStats = allPlayerStats.length;
+
+                            let playerTeam = JSON.parse(d.toString()).statistics.home.name.includes(team) ? "home" : "away";
+                            let playerPositionStats = JSON.parse(d.toString()).statistics[playerTeam][statCategory].players;
+                            let numPlayerPositionStats = playerPositionStats.length;
+
+                            
+
+                            // Iterate through the position's stats and return the player's stats
+                            for (var i=0; i < numPlayerPositionStats; i++) {
+
+
+                                // ********************** TO-DO: LOG THIS TO CONSOLE IN PRETTY MANNER ********************** //
+                                if (playerPositionStats[i].name.includes(player)) {
+                                    console.log(playerPositionStats[i])
+                                }
+                            }
+
+                        
+
+
+                        });
+
+                    });
+
+
+
+                    gameStatsReq.on('error', (e) => {
+                      console.error(e);
+                    });
+
+                    gameStatsReq.end();
+
+                    // if we didn't find the team in this week, they must be on a bye so search last week
+                    // otherwise get the previous week's games, search for that team's game and return the players stats from most recent game
+                    if (!foundTeam) {
+                        getPlayerGameStats(player, team, schedule, week-1);
+
+
+                    }
+
+
+                })();
+
+                 
+
+                
+
+
+
+            });
+
+        });
+
+        playerPositionReq.on('error', (e) => {
+          console.error(e);
+        });
+
+        playerPositionReq.end();
+
+    })();
+
+
+
+
+    
+
+
+
+
+
+
+}
+
+
+
+
+
+// Gets news about a specific player
+function getPlayerNews(player, team) { 
+
+//we can get the year and season-type from the available seasons endpoint (get the last JSON object that is returned)
+    let currYear = new Date().getFullYear().toString();
+    let currSeasonType;
+
+    const seasonsOptions = {
+        hostname: SPORTS_RADAR_NFL_API_BASE_URL,
+        path: '/nfl/official/trial/v5/en/league/seasons.json?api_key='+SPORTS_RADAR_NFL_API_KEY,
+        method: 'GET'
+    }
+
+    const seasonsReq = https.request(seasonsOptions, (res) => {
+        // console.log(options);
+        console.log('seasons statusCode: ', res.statusCode);
+        // console.log('seasons headers: ', res.headers);
+
+
+        res.on('data', (d) => {
+            let seasons = JSON.parse(d.toString()).seasons;
+            currSeasonType = seasons[seasons.length-1].type.code;
+
+
+            // have to delay program execution so that don't go over 1 Qps limit imposed by SportsRadar API when we make req below
+            var wait = ms => new Promise((r, j)=>setTimeout(r, ms));
+            (async () => { 
+
+                await wait(1000);   
+
+                
+                // given the year and season type we can get the schedule for that season (ultimately to get the current week)
+                let schedule;
+                const scheduleOptions = {
+                    hostname: SPORTS_RADAR_NFL_API_BASE_URL,
+                    path: '/nfl/official/trial/v5/en/games/'+currYear+'/'+currSeasonType+'/schedule.json?api_key='+SPORTS_RADAR_NFL_API_KEY,
+                    method: 'GET'
+                }
+
+                const scheduleReq = https.request(scheduleOptions, (res) => {
+                    // console.log(options);
+                    console.log('schedule statusCode: ', res.statusCode);
+                    // console.log('schedule headers: ', res.headers);
+
+                    // create array for all data
+                    let chunks = [];
+
+                    res.on('data', function (d) {
+                        
+                        // append to that array
+                        chunks.push(d);
+
+
+
+                    }).on('end', function () {
+
+                        //create buffer from the bytes in the chunks array ONLY AFTER all of it has been received then cast to string and parse JSON object
+                        let d = Buffer.concat(chunks);
+                        let schedule = JSON.parse(d.toString()).weeks;
+                        let numWeeks = schedule.length;
+                        let currWeek = 0;
+
+                        /* iterate through the season schedule's weeks array and check the first element of games array for "scheduled" instead of "closed"
+                           or sort games array by date and check last element to know what week it is */
+                        for (let i = 0; i < numWeeks; i++) {
+                            if(schedule[i].games[0].status==="scheduled" || schedule[i].games[0].status==="inprogress" || schedule[i].games[0].status==="halftime") {
+                                currWeek = schedule[i].sequence;
+                                break;
+                            }
+                        }
+
+                        // we then check the games array for the current week to see if the team is playing or already played and get the game id
+                        let currWeekGames = schedule[currWeek-1].games;
+                        let numCurrWeekGames = currWeekGames.length;
+                        let foundTeam = false;
+                        for (let j =0; j < numCurrWeekGames; j++) { 
+                            
+
+                            // check if the game includes the team in question
+                            if (currWeekGames[j].home.name.includes(team) || currWeekGames[j].away.name.includes(team)) {
+                                foundTeam = true;
+                                if (currWeekGames[j].status==="inprogress" || currWeekGames[j].status==="halftime" || currWeekGames[j].status==="complete") {
+
+                                    // ****************** TO DO: get the game id and then use it to get player stats for that game ****************** //
+
+
+                                } else {
+
+                                    // We know if game isn't in progress, at half, or complete then it is yet to be played in the current week. So 
+                                    // get stat information about player from last week's game
+                                    getPlayerGameStats(player, team, schedule, currWeek-2);
+
+
+                                }
+                            }
+
+
+
+                        } 
+
+                        // if we didn't find the team in this week, they must be on a bye so search last week
+                        // otherwise get the previous week's games, search for that team's game and return the players stats from most recent game
+                        if (!foundTeam) {
+
+
+                        }
+
+                    });
+
+
+                });
+
+                scheduleReq.on('error', (e) => {
+                  console.error(e);
+                });
+
+                scheduleReq.end();
+
+            })();  
+
+
+        });
+
+
+    });
+
+
+    seasonsReq.on('error', (e) => {
+      console.error(e);
+    });
+
+    seasonsReq.end();
+
+}
+
+
+
+// gets scores/standings related articles given a team
 function getScoresOrStandings(team, queryType) {
     console.log('team to search for: ',team);
 
@@ -345,7 +675,7 @@ function getScoresOrStandings(team, queryType) {
 
                                 } else {
                                     // get the previous week's score or standings depending on the queryType
-                                    if (queryType==="howDidTheBlankDo") {
+                                    if (queryType==="howDidTheBlankDo" || queryType==="howDidBlankDo") {
 
                                         getPrevWeekScore(team, schedule, currWeek-2);
 
@@ -520,20 +850,21 @@ function getPrevWeekScore(team, schedule, prevWeek) {
             let opposingScore = prevWeekGames[k].scoring[opposingScoreKey];
 
             let recencyInWeeks = weeksBetween(new Date(prevWeekGames[k].scheduled), new Date());
-            let dateInfo = recencyInWeeks===-1 ? "two weeks ago" : "last week"; 
+            // let dateInfo = recencyInWeeks===-1 ? "two weeks ago" : "last week"; 
 
           
 
             let higherScore = teamScore > opposingScore ? teamScore : opposingScore;
             let lowerScore = teamScore <= opposingScore ? teamScore : opposingScore;
 
-
+            console.log(`${GOOGLE_NEWS_API_BASE_URL}everything?apiKey=${GOOGLE_NEWS_API_KEY}&q=`+teamName.split(' ')[1]+"+"+opposingName.split(' ')[1]+"+"+higherScore+"-"+lowerScore)
 
             // ***************** TO DO: PUT THIS IN A FUNCTION ***************** //
             request({
                  "url": `${GOOGLE_NEWS_API_BASE_URL}everything?apiKey=${GOOGLE_NEWS_API_KEY}&q=`+teamName.split(' ')[1]+"+"+opposingName.split(' ')[1]+"+"+higherScore+"-"+lowerScore,
                  "method": "GET"
                 }, (err, res, body) => {
+
 
 
                 let articles = JSON.parse(body).articles;
@@ -547,7 +878,7 @@ function getPrevWeekScore(team, schedule, prevWeek) {
                             
 
                             // ***************** TO DO: FORMAT THIS NICELY SO PRINTS PRETTY IN CONSOLE ***************** //
-                            console.log(articles[i])
+                            console.log(articles[i]);
                         }
                     }
                     
@@ -652,21 +983,27 @@ function getTheLatest(data, queryType) {
 
     } else if (queryType==="howDidBlankDo") {
 
+
         // need to check if the relevant name in the query is a team, player, or city
         if (isTeam(name)) {
 
-            // 1. need to check if game on
-            // 2. if game on then return score
-            // 3. if game not on then return recent news
-            console.log('team!')
+            // if it's a team then want to get the scores/standings news
+            getScoresOrStandings(name, queryType);
             
 
 
-        } else if (isPlayer(name)) {
+        } else if (isPlayer(name)[0]) {
 
+            // if it's a player we want an article on how the player did
+            getPlayerNews(name, isPlayer(name)[1])
             console.log('player!')
 
         } else if (isCity(name)) {
+
+            /* if it's a city then: 
+             1. ask which sport
+             2. check which sport is on (optional)
+             3. get scores/standings news from the team from that city with that sport*/
 
             console.log('city!')
 

@@ -4,6 +4,7 @@
 		[
 			{
 				"team_id" : "new-england-patriots",
+				"league": "nfl",
 			    "abbreviation" : "NE",
 			    "conference" : "AFC",
 			    "division": "east",
@@ -38,6 +39,7 @@
 			},
 			{
 				"team_id" : "baltimore-ravens",
+				"league": "nfl",
 			    "abbreviation" : "BAL",
 			    "conference" : "AFC",
 			    "division": "north",
@@ -72,6 +74,7 @@
 			},
 			{
 				"team_id" : "dallas-cowboys",
+				"league": "nfl",
 			    "abbreviation" : "DAL",
 			    "conference" : "NFC",
 			    "division": "east",
