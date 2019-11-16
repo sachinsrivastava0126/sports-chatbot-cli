@@ -1,0 +1,1108 @@
+{
+	"nfl": {
+		"teams":
+		[
+			{
+				"team_id" : "new-england-patriots",
+					"league" : "nfl",
+					"abbreviation" : "NE",
+			    "conference" : "AFC",
+			    "division": "east",
+			    "first_name" : "New England",
+			    "last_name" : "Patriots",
+			    "nick_name" : "Pats",
+			    "city" : "New England",
+			    "full_name" : "New England Patriots",
+			    "players": [
+				    {
+					    "last_name" : "Brady",
+					    "first_name": "Tom",
+					    "display_name": "Tom Brady",
+					    "position": "QB",
+					    "uniform_number": 12
+					},
+					{
+					    "last_name" : "White",
+					    "first_name": "James",
+					    "display_name": "James White",
+					    "position": "RB",
+					    "uniform_number": 28
+					},
+					{
+					    "last_name" : "Edelman",
+					    "first_name": "Julian",
+					    "display_name": "Julian Edelman",
+					    "position": "WR",
+					    "uniform_number": 11
+					},
+				{
+						"last_name" : "Edelman",
+						"first_name": "Julian",
+						"display_name": "Julian Edelman",
+						"position": "WR",
+						"uniform_number": 11
+				}
+				]
+			},
+			{
+				"team_id" : "buffalo-bills",
+					"league" : "nfl",
+					"abbreviation" : "BUF",
+			    "conference" : "AFC",
+			    "division": "east",
+			    "first_name" : "Buffalo",
+			    "last_name" : "Bills",
+			    "nick_name" : "bills",
+			    "city" : "Buffalo",
+			    "full_name" : "Buffalo Bills",
+			    "players": [
+				    {
+					    "last_name" : "Allen",
+					    "first_name": "Josh",
+					    "display_name": "Josh Allen",
+					    "position": "QB",
+					    "uniform_number": 17
+					},
+					{
+					    "last_name" : "Singletary",
+					    "first_name": "Devin",
+					    "display_name": "Devin Singletary",
+					    "position": "RB",
+					    "uniform_number": 26
+					},
+					{
+					    "last_name" : "Brown",
+					    "first_name": "John",
+					    "display_name": "John Brown",
+					    "position": "WR",
+					    "uniform_number": 15
+					}
+				]
+			},
+			{
+				"team_id" : "miami-dolphins",
+					"league" : "nfl",
+					"abbreviation" : "MIA",
+			    "conference" : "AFC",
+			    "division": "east",
+			    "first_name" : "Miami",
+			    "last_name" : "Dolphins",
+			    "nick_name" : "dolphins",
+			    "city" : "Miami",
+			    "full_name" : "Miami Dolphins",
+			    "players": [
+				    {
+					    "last_name" : "Fitzpatrick",
+					    "first_name": "Ryan",
+					    "display_name": "Ryan Fitzpatrick",
+					    "position": "QB",
+					    "uniform_number": 14
+					},
+					{
+					    "last_name" : "Ballage",
+					    "first_name": "Kalen",
+					    "display_name": "Kalen Ballage",
+					    "position": "RB",
+					    "uniform_number": 27
+					},
+					{
+					    "last_name" : "Parker",
+					    "first_name": "DeVante",
+					    "display_name": "DeVante Parker",
+					    "position": "WR",
+					    "uniform_number": 11
+					}
+				]
+			},
+			{
+				"team_id" : "new-york-jets",
+					"league" : "nfl",
+					"abbreviation" : "NYJ",
+			    "conference" : "AFC",
+			    "division": "east",
+			    "first_name" : "New York",
+			    "last_name" : "Jets",
+			    "nick_name" : "jets",
+			    "city" : "New York",
+			    "full_name" : "New York Jets",
+			    "players": [
+				    {
+					    "last_name" : "Darnold",
+					    "first_name": "Sam",
+					    "display_name": "Sam Darnold",
+					    "position": "QB",
+					    "uniform_number": 14
+					},
+					{
+					    "last_name" : "Bell",
+					    "first_name": "Le Veon",
+					    "display_name": "Le Veon Bell",
+					    "position": "RB",
+					    "uniform_number": 26
+					},
+					{
+					    "last_name" : "Anderson",
+					    "first_name": "Robby",
+					    "display_name": "Robby Anderson",
+					    "position": "WR",
+					    "uniform_number": 11
+					}
+				]
+			},
+			{
+				"team_id" : "cincinnati-bengals",
+					"league" : "nfl",
+					"abbreviation" : "CIN",
+			    "conference" : "AFC",
+			    "division": "north",
+			    "first_name" : "Cincinnati",
+			    "last_name" : "Bengals",
+			    "nick_name" : "bengals",
+			    "city" : "Cincinnati",
+			    "full_name" : "Cincinnati Bengals",
+			    "players": [
+				    {
+					    "last_name" : "Finley",
+					    "first_name": "Ryan",
+					    "display_name": "Ryan Finley",
+					    "position": "QB",
+					    "uniform_number": 5
+					},
+					{
+					    "last_name" : "Mixon",
+					    "first_name": "Joe",
+					    "display_name": "Joe Mixon",
+					    "position": "RB",
+					    "uniform_number": 28
+					},
+					{
+					    "last_name" : "Green",
+					    "first_name": "AJ",
+					    "display_name": "AJ Green",
+					    "position": "WR",
+					    "uniform_number": 18
+					}
+				]
+			},
+			{
+				"team_id" : "cleveland-browns",
+					"league" : "nfl",
+					"abbreviation" : "CLE",
+			    "conference" : "AFC",
+			    "division": "north",
+			    "first_name" : "Cleveland",
+			    "last_name" : "Browns",
+			    "nick_name" : "browns",
+			    "city" : "Cleveland",
+			    "full_name" : "Cleveland",
+			    "players": [
+				    {
+					    "last_name" : "Mayfield",
+					    "first_name": "Baker",
+					    "display_name": "Bake Mayfield",
+					    "position": "QB",
+					    "uniform_number": 6
+					},
+					{
+					    "last_name" : "Chubb",
+					    "first_name": "Nick",
+					    "display_name": "Nick Chubb",
+					    "position": "RB",
+					    "uniform_number": 24
+					},
+					{
+					    "last_name" : "Landry",
+					    "first_name": "Jarvis",
+					    "display_name": "Jarvis Landry",
+					    "position": "WR",
+					    "uniform_number": 80
+					}
+				]
+			},
+			{
+				"team_id" : "pittsburgh-steelers",
+					"league" : "nfl",
+					"abbreviation" : "PIT",
+			    "conference" : "AFC",
+			    "division": "north",
+			    "first_name" : "Pittsburgh",
+			    "last_name" : "Steelers",
+			    "nick_name" : "burgh",
+			    "city" : "Pittsburgh",
+			    "full_name" : "Pittsburgh Steelers",
+			    "players": [
+				    {
+					    "last_name" : "Rudolph",
+					    "first_name": "Mason",
+					    "display_name": "Mason Rudolph",
+					    "position": "QB",
+					    "uniform_number": 2
+					},
+					{
+					    "last_name" : "Washington",
+					    "first_name": "James",
+					    "display_name": "James Washington",
+					    "position": "WR",
+					    "uniform_number": 13
+					},
+					{
+					    "last_name" : "Conner",
+					    "first_name": "James",
+					    "display_name": "James Conner",
+					    "position": "RB",
+					    "uniform_number": 30
+					}
+				]
+			},
+			{
+				"team_id" : "houston-texans",
+					"league" : "nfl",
+					"abbreviation" : "HOUS",
+			    "conference" : "AFC",
+			    "division": "south",
+			    "first_name" : "Houston",
+			    "last_name" : "Texans",
+			    "nick_name" : "tex",
+			    "city" : "Houston",
+			    "full_name" : "Houston Texans",
+			    "players": [
+				    {
+					    "last_name" : "Watson",
+					    "first_name": "Deshaun",
+					    "display_name": "Deshaun Watson",
+					    "position": "QB",
+					    "uniform_number": 4
+					},
+					{
+					    "last_name" : "Carter",
+					    "first_name": "DeAndre",
+					    "display_name": "DeAndre Carter",
+					    "position": "WR",
+					    "uniform_number": 14
+					},
+					{
+					    "last_name" : "Howell",
+					    "first_name": "Buddy",
+					    "display_name": "Buddy Howell",
+					    "position": "RB",
+					    "uniform_number": 38
+					}
+				]
+			},
+			{
+				"team_id" : "indianapolis-colts",
+					"league" : "nfl",
+					"abbreviation" : "IND",
+			    "conference" : "AFC",
+			    "division": "south",
+			    "first_name" : "Indianapolis",
+			    "last_name" : "Colts",
+			    "nick_name" : "colts",
+			    "city" : "Indianapolis",
+			    "full_name" : "Indianapolis Colts",
+			    "players": [
+				    {
+					    "last_name" : "Brissett",
+					    "first_name": "Jacoby",
+					    "display_name": "Jacoby Brissett",
+					    "position": "QB",
+					    "uniform_number": 7
+					},
+					{
+					    "last_name" : "Hilton",
+					    "first_name": "TY",
+					    "display_name": "TY Hilton",
+					    "position": "WR",
+					    "uniform_number": 13
+					},
+					{
+					    "last_name" : "Hines",
+					    "first_name": "Nyheim",
+					    "display_name": "Nyheim Hines",
+					    "position": "RB",
+					    "uniform_number": 21
+					}
+				]
+			},
+			{
+				"team_id" : "jacksonville-jaguars",
+					"league" : "nfl",
+					"abbreviation" : "JAX",
+			    "conference" : "AFC",
+			    "division": "south",
+			    "first_name" : "Jacksonville",
+			    "last_name" : "Jaguars",
+			    "nick_name" : "jags",
+			    "city" : "Jacksonville",
+			    "full_name" : "Jacksonville Jaguars",
+			    "players": [
+				    {
+					    "last_name" : "Foles",
+					    "first_name": "Nick",
+					    "display_name": "Nick Foles",
+					    "position": "QB",
+					    "uniform_number": 7
+					},
+					{
+					    "last_name" : "Fournette",
+					    "first_name": "Leonard",
+					    "display_name": "Leonard Fournette",
+					    "position": "RB",
+					    "uniform_number": 27
+					},
+					{
+					    "last_name" : "Keelan",
+					    "first_name": "Cole",
+					    "display_name": "Cole Keelan",
+					    "position": "WR",
+					    "uniform_number": 84
+					}
+				]
+			},
+			{
+				"team_id" : "tennessee-titans",
+					"league" : "nfl",
+					"abbreviation" : "TEN",
+			    "conference" : "AFC",
+			    "division": "south",
+			    "first_name" : "Tennessee",
+			    "last_name" : "Titans",
+			    "nick_name" : "titans",
+			    "city" : "Nashville",
+			    "full_name" : "Tennessee Titans",
+			    "players": [
+				    {
+					    "last_name" : "Tannehill",
+					    "first_name": "Ryan",
+					    "display_name": "Ryan Tannehill",
+					    "position": "QB",
+					    "uniform_number": 17
+					},
+					{
+					    "last_name" : "Henry",
+					    "first_name": "Derrick",
+					    "display_name": "Derrick Henry",
+					    "position": "RB",
+					    "uniform_number": 22
+					},
+					{
+					    "last_name" : "Tajae",
+					    "first_name": "Sharpe",
+					    "display_name": "Tajae Sharpe",
+					    "position": "WR",
+					    "uniform_number": 19
+					}
+				]
+			},
+			{
+				"team_id" : "denver-broncos",
+					"league" : "nfl",
+					"abbreviation" : "DEN",
+			    "conference" : "AFC",
+			    "division": "west",
+			    "first_name" : "Denver",
+			    "last_name" : "Broncos",
+			    "nick_name" : "broncs",
+			    "city" : "Denver",
+			    "full_name" : "Denver Broncos",
+			    "players": [
+				    {
+					    "last_name" : "Allen",
+					    "first_name": "Brandon",
+					    "display_name": "Brandon Allen",
+					    "position": "QB",
+					    "uniform_number": 2
+					},
+					{
+					    "last_name" : "Lindsay",
+					    "first_name": "Phillip",
+					    "display_name": "Phillip Lindsay",
+					    "position": "RB",
+					    "uniform_number": 30
+					},
+					{
+					    "last_name" : "Hamilton",
+					    "first_name": "DaeSean",
+					    "display_name": "DaeSean Hamilton",
+					    "position": "WR",
+					    "uniform_number": 17
+					}
+				]
+			},
+			{
+				"team_id" : "kansas-city-chiefs",
+					"league" : "nfl",
+					"abbreviation" : "KS",
+			    "conference" : "AFC",
+			    "division": "west",
+			    "first_name" : "Kansas City",
+			    "last_name" : "Chiefs",
+			    "nick_name" : "chiefies",
+			    "city" : "Kansas City",
+			    "full_name" : "Kansas City Chiefs",
+			    "players": [
+				    {
+					    "last_name" : "Mahomes",
+					    "first_name": "Patrick",
+					    "display_name": "Patrick Mahomes",
+					    "position": "QB",
+					    "uniform_number": 15
+					},
+					{
+					    "last_name" : "Williams",
+					    "first_name": "Damien",
+					    "display_name": "Damien Williams",
+					    "position": "RB",
+					    "uniform_number": 26
+					},
+					{
+					    "last_name" : "Watkins",
+					    "first_name": "Sammy",
+					    "display_name": "Sammy Watkins",
+					    "position": "WR",
+					    "uniform_number": 14
+					}
+				]
+			},
+			{
+				"team_id" : "los-angeles-chargers",
+					"league" : "nfl",
+					"abbreviation" : "LA",
+			    "conference" : "AFC",
+			    "division": "west",
+			    "first_name" : "Los Angeles",
+			    "last_name" : "Chargers",
+			    "nick_name" : "chargers",
+			    "city" : "Los Angeles",
+			    "full_name" : "Los Angeles Chargers",
+			    "players": [
+				    {
+					    "last_name" : "Rivers",
+					    "first_name": "Philip",
+					    "display_name": "Philip Rivers",
+					    "position": "QB",
+					    "uniform_number": 17
+					},
+					{
+					    "last_name" : "Gordon",
+					    "first_name": "Melvin",
+					    "display_name": "Melvin Gordon",
+					    "position": "RB",
+					    "uniform_number": 17
+					},
+					{
+					    "last_name" : "Williams",
+					    "first_name": "Mike",
+					    "display_name": "Mike Williams",
+					    "position": "WR",
+					    "uniform_number": 81
+					}
+				]
+			},
+			{
+				"team_id" : "oakland-raiders",
+					"league" : "nfl",
+					"abbreviation" : "OAK",
+			    "conference" : "AFC",
+			    "division": "west",
+			    "first_name" : "Oakland",
+			    "last_name" : "Raiders",
+			    "nick_name" : "raiders",
+			    "city" : "Oakland",
+			    "full_name" : "Oakland Raiders",
+			    "players": [
+				    {
+					    "last_name" : "Carr",
+					    "first_name": "Derek",
+					    "display_name": "Derek Carr",
+					    "position": "QB",
+					    "uniform_number": 4
+					},
+					{
+					    "last_name" : "Jacobs",
+					    "first_name": "Josh",
+					    "display_name": "Josh Jacobs",
+					    "position": "RB",
+					    "uniform_number": 28
+					},
+					{
+					    "last_name" : "Williams",
+					    "first_name": "Tyrell",
+					    "display_name": "Tyrell Williams",
+					    "position": "WR",
+					    "uniform_number": 16
+					}
+				]
+			},
+			{
+				"team_id" : "new-york-giants",
+					"league" : "nfl",
+					"abbreviation" : "NYG",
+			    "conference" : "NFC",
+			    "division": "east",
+			    "first_name" : "New York",
+			    "last_name" : "Giants",
+			    "nick_name" : "giants",
+			    "city" : "New York",
+			    "full_name" : "New York Giants",
+			    "players": [
+				    {
+					    "last_name" : "Jones",
+					    "first_name": "Daniel",
+					    "display_name": "Daniel Jones",
+					    "position": "QB",
+					    "uniform_number": 8
+					},
+					{
+					    "last_name" : "Barkley",
+					    "first_name": "Saquon",
+					    "display_name": "Saquon Barkley",
+					    "position": "RB",
+					    "uniform_number": 26
+					},
+					{
+					    "last_name" : "Latimer",
+					    "first_name": "Cody",
+					    "display_name": "Cody Latimer",
+					    "position": "WR",
+					    "uniform_number": 12
+					}
+				]
+			},
+			{
+				"team_id" : "philadelphia-eagles",
+					"league" : "nfl",
+					"abbreviation" : "PHL",
+			    "conference" : "NFC",
+			    "division": "east",
+			    "first_name" : "Philadelphia",
+			    "last_name" : "Eagles",
+			    "nick_name" : "iggles",
+			    "city" : "Philadelphia",
+			    "full_name" : "Philadelphia Eagles",
+			    "players": [
+				    {
+					    "last_name" : "Wentz",
+					    "first_name": "Carson",
+					    "display_name": "Carson Wentz",
+					    "position": "QB",
+					    "uniform_number": 11
+					},
+					{
+					    "last_name" : "Howard",
+					    "first_name": "Jordan",
+					    "display_name": "Jordan Howard",
+					    "position": "RB",
+					    "uniform_number": 24
+					},
+					{
+					    "last_name" : "Hollins",
+					    "first_name": "Mack",
+					    "display_name": "Mack Hollins",
+					    "position": "WR",
+					    "uniform_number": 16
+					}
+				]
+			},
+			{
+				"team_id" : "washington-redskins",
+					"league" : "nfl",
+					"abbreviation" : "WAS",
+			    "conference" : "NFC",
+			    "division": "east",
+			    "first_name" : "Washington",
+			    "last_name" : "Redskins",
+			    "nick_name" : "skins",
+			    "city" : "Washington",
+			    "full_name" : "Washington Redskins",
+			    "players": [
+				    {
+					    "last_name" : "Keenum",
+					    "first_name": "Case",
+					    "display_name": "Case Keenum",
+					    "position": "QB",
+					    "uniform_number": 8
+					},
+					{
+					    "last_name" : "Thompson",
+					    "first_name": "Chris",
+					    "display_name": "Chris Thompson",
+					    "position": "RB",
+					    "uniform_number": 25
+					},
+					{
+					    "last_name" : "Richardson",
+					    "first_name": "Paul",
+					    "display_name": "Paul Richardson",
+					    "position": "WR",
+					    "uniform_number": 10
+					}
+				]
+			},
+			{
+				"team_id" : "chicago-bears",
+					"league" : "nfl",
+					"abbreviation" : "CHI",
+			    "conference" : "NFC",
+			    "division": "north",
+			    "first_name" : "Chicago",
+			    "last_name" : "Bears",
+			    "nick_name" : "bears",
+			    "city" : "Chicago",
+			    "full_name" : "Chicago Bears",
+			    "players": [
+				    {
+					    "last_name" : "Trubisky",
+					    "first_name": "Mitch",
+					    "display_name": "Mitch Trubisky",
+					    "position": "QB",
+					    "uniform_number": 10
+					},
+					{
+					    "last_name" : "Cohen",
+					    "first_name": "Tarik",
+					    "display_name": "Tarik Cohen",
+					    "position": "QB",
+					    "uniform_number": 29
+					},
+					{
+					    "last_name" : "Gabriel",
+					    "first_name": "Taylor",
+					    "display_name": "Taylor Gabriel",
+					    "position": "WR",
+					    "uniform_number": 18
+					}
+				]
+			},
+			{
+				"team_id" : "green-bay-packers",
+					"league" : "nfl",
+					"abbreviation" : "GB",
+			    "conference" : "NFC",
+			    "division": "north",
+			    "first_name" : "Green Bay",
+			    "last_name" : "Packers",
+			    "nick_name" : "pack",
+			    "city" : "Green Bay",
+			    "full_name" : "Green Bay Packers",
+			    "players": [
+				    {
+					    "last_name" : "Rodgers",
+					    "first_name": "Aaron",
+					    "display_name": "Aaron Rodgers",
+					    "position": "QB",
+					    "uniform_number": 12
+					},
+					{
+					    "last_name" : "Jones",
+					    "first_name": "Aaron",
+					    "display_name": "Aaron Jones",
+					    "position": "RB",
+					    "uniform_number": 33
+					},
+					{
+					    "last_name" : "Valdes-Scantling",
+					    "first_name": "Marquez",
+					    "display_name": "Marquez Valdes-Scantling",
+					    "position": "WR",
+					    "uniform_number": 83
+					}
+				]
+			},
+			{
+				"team_id" : "minnesota-vikings",
+					"league" : "nfl",
+					"abbreviation" : "MIN",
+			    "conference" : "NFC",
+			    "division": "north",
+			    "first_name" : "Minnesota",
+			    "last_name" : "Vikings",
+			    "nick_name" : "minnie",
+			    "city" : "Minneapolis",
+			    "full_name" : "Minnesota Vikings",
+			    "players": [
+				    {
+					    "last_name" : "Cousins",
+					    "first_name": "Kirk",
+					    "display_name": "Kirk Cousins",
+					    "position": "QB",
+					    "uniform_number": 8
+					},
+					{
+					    "last_name" : "Cook",
+					    "first_name": "Dalvin",
+					    "display_name": "Dalvin Cook",
+					    "position": "RB",
+					    "uniform_number": 33
+					},
+					{
+					    "last_name" : "Diggs",
+					    "first_name": "Stefon",
+					    "display_name": "Stefon Diggs",
+					    "position": "WR",
+					    "uniform_number": 14
+					}
+				]
+			},
+			{
+				"team_id" : "atlanta-falcons",
+					"league" : "nfl",
+					"abbreviation" : "ATL",
+			    "conference" : "NFC",
+			    "division": "south",
+			    "first_name" : "Atlanta",
+			    "last_name" : "Falcons",
+			    "nick_name" : "falcons",
+			    "city" : "Atlanta",
+			    "full_name" : "Atlanta Falcons",
+			    "players": [
+				    {
+					    "last_name" : "Schuab",
+					    "first_name": "Matt",
+					    "display_name": "Matt Schuab",
+					    "position": "QB",
+					    "uniform_number": 8
+					},
+					{
+					    "last_name" : "Freeman",
+					    "first_name": "Devonta",
+					    "display_name": "Devonta Freeman",
+					    "position": "RB",
+					    "uniform_number": 24
+					},
+					{
+					    "last_name" : "Ridley",
+					    "first_name": "Calvin",
+					    "display_name": "Calvin Ridley",
+					    "position": "WR",
+					    "uniform_number": 18
+					}
+				]
+			},
+			{
+				"team_id" : "carolina-panthers",
+					"league" : "nfl",
+					"abbreviation" : "CAR",
+			    "conference" : "NFC",
+			    "division": "south",
+			    "first_name" : "Carolina",
+			    "last_name" : "Panthers",
+			    "nick_name" : "panthers",
+			    "city" : "Charlotte",
+			    "full_name" : "Carolina Panthers",
+			    "players": [
+				    {
+					    "last_name" : "Allen",
+					    "first_name": "Kyle",
+					    "display_name": "Kyle Allen",
+					    "position": "QB",
+					    "uniform_number": 7
+					},
+					{
+					    "last_name" : "McCaffrey",
+					    "first_name": "Christian",
+					    "display_name": "Christian McCaffrey",
+					    "position": "RB",
+					    "uniform_number": 22
+					},
+					{
+					    "last_name" : "Samuel",
+					    "first_name": "Curtis",
+					    "display_name": "Curtis Samuel",
+					    "position": "WR",
+					    "uniform_number": 10
+					}
+				]
+			},
+			{
+				"team_id" : "new-orleans-saints",
+					"league" : "nfl",
+					"abbreviation" : "NO",
+			    "conference" : "NFC",
+			    "division": "south",
+			    "first_name" : "New Orleans",
+			    "last_name" : "Saints",
+			    "nick_name" : "saints",
+			    "city" : "New Orleans",
+			    "full_name" : "New Orleans Saints",
+			    "players": [
+				    {
+					    "last_name" : "Brees",
+					    "first_name": "Drew",
+					    "display_name": "Drew Brees",
+					    "position": "QB",
+					    "uniform_number": 9
+					},
+					{
+					    "last_name" : "Murray",
+					    "first_name": "Latavius",
+					    "display_name": "Latavius Murray",
+					    "position": "RB",
+					    "uniform_number": 28
+					},
+					{
+					    "last_name" : "Ginn",
+					    "first_name": "Ted",
+					    "display_name": "Ted Ginn",
+					    "position": "WR",
+					    "uniform_number": 19
+					}
+				]
+			},
+			{
+				"team_id" : "tampa-bay-buccaneers",
+					"league" : "nfl",
+					"abbreviation" : "TB",
+			    "conference" : "NFC",
+			    "division": "south",
+			    "first_name" : "Tampa Bay",
+			    "last_name" : "Buccaneers",
+			    "nick_name" : "buccs",
+			    "city" : "Tampa Bay",
+			    "full_name" : "Tampa Bay Buccaneers",
+			    "players": [
+				    {
+					    "last_name" : "Winston",
+					    "first_name": "Jameis",
+					    "display_name": "Jameis Winston",
+					    "position": "QB",
+					    "uniform_number": 3
+					},
+					{
+					    "last_name" : "Barber",
+					    "first_name": "Peyton",
+					    "display_name": "Peyton Barber",
+					    "position": "RB",
+					    "uniform_number": 25
+					},
+					{
+					    "last_name" : "Evans",
+					    "first_name": "Mike",
+					    "display_name": "Mike Evans",
+					    "position": "WR",
+					    "uniform_number": 13
+					}
+				]
+			},
+			{
+				"team_id" : "arizona-cardinals",
+					"league" : "nfl",
+					"abbreviation" : "AZ",
+			    "conference" : "NFC",
+			    "division": "west",
+			    "first_name" : "Arizona",
+			    "last_name" : "Cardinals",
+			    "nick_name" : "cards",
+			    "city" : "Glendale",
+			    "full_name" : "Arizona Cardinals",
+			    "players": [
+				    {
+					    "last_name" : "Murray",
+					    "first_name": "Kyler",
+					    "display_name": "Kyler Murray",
+					    "position": "QB",
+					    "uniform_number": 1
+					},
+					{
+					    "last_name" : "Edmonds",
+					    "first_name": "Chase",
+					    "display_name": "Chase Edmonds",
+					    "position": "RB",
+					    "uniform_number": 29
+					},
+					{
+					    "last_name" : "Byrd",
+					    "first_name": "Damiere",
+					    "display_name": "Damiere Byrd",
+					    "position": "WR",
+					    "uniform_number": 14
+					}
+				]
+			},
+			{
+				"team_id" : "los-angeles-rams",
+					"league" : "nfl",
+					"abbreviation" : "LA",
+			    "conference" : "NFC",
+			    "division": "west",
+			    "first_name" : "Los Angeles",
+			    "last_name" : "Rams",
+			    "nick_name" : "rams",
+			    "city" : "Los Angeles",
+			    "full_name" : "Los Angeles Rams",
+			    "players": [
+				    {
+					    "last_name" : "Goff",
+					    "first_name": "Jared",
+					    "display_name": "Jared Goff",
+					    "position": "QB",
+					    "uniform_number": 16
+					},
+					{
+					    "last_name" : "Gurley",
+					    "first_name": "Todd",
+					    "display_name": "Todd Gurley",
+					    "position": "RB",
+					    "uniform_number": 30
+					},
+					{
+					    "last_name" : "Woods",
+					    "first_name": "Robert",
+					    "display_name": "Robert Woods",
+					    "position": "WR",
+					    "uniform_number": 17
+					}
+				]
+			},
+			{
+				"team_id" : "san-francisco-49ers",
+					"league" : "nfl",
+					"abbreviation" : "SF",
+			    "conference" : "NFC",
+			    "division": "west",
+			    "first_name" : "San Francisco",
+			    "last_name" : "49ers",
+			    "nick_name" : "niners",
+			    "city" : "San Francisco",
+			    "full_name" : "San Francisco 49ers",
+			    "players": [
+				    {
+					    "last_name" : "Garoppolo",
+					    "first_name": "Jimmy",
+					    "display_name": "Jimmy Garoppolo",
+					    "position": "QB",
+					    "uniform_number": 10
+					},
+					{
+					    "last_name" : "Breida",
+					    "first_name": "Matt",
+					    "display_name": "Matt Breida",
+					    "position": "RB",
+					    "uniform_number": 22
+					},
+					{
+					    "last_name" : "Sanders",
+					    "first_name": "Emmanuel",
+					    "display_name": "Emmanuel Sanders",
+					    "position": "WR",
+					    "uniform_number": 17
+					}
+				]
+			},
+			{
+				"team_id" : "seattle-seahawks",
+					"league" : "nfl",
+					"abbreviation" : "SEA",
+			    "conference" : "NFC",
+			    "division": "west",
+			    "first_name" : "Seattle",
+			    "last_name" : "Seahawks",
+			    "nick_name" : "hawks",
+			    "city" : "Seattle",
+			    "full_name" : "Seattle Seahawks",
+			    "players": [
+				    {
+					    "last_name" : "Wilson",
+					    "first_name": "Russell",
+					    "display_name": "Russell Wilson",
+					    "position": "QB",
+					    "uniform_number": 3
+					},
+					{
+					    "last_name" : "Carson",
+					    "first_name": "Chris",
+					    "display_name": "Chris Carson",
+					    "position": "RB",
+					    "uniform_number": 32
+					},
+					{
+					    "last_name" : "Lockett",
+					    "first_name": "Tyler",
+					    "display_name": "Tyler Lockett",
+					    "position": "WR",
+					    "uniform_number": 16
+					}
+				]
+			},
+			{
+				"team_id" : "baltimore-ravens",
+					"league" : "nfl",
+					"abbreviation" : "BAL",
+			    "conference" : "AFC",
+			    "division": "north",
+			    "first_name" : "Baltimore",
+			    "last_name" : "Ravens",
+			    "nick_name" : "Ravens",
+			    "city" : "Baltimore",
+			    "full_name" : "Baltimore Ravens",
+			    "players": [
+				    {
+					    "last_name" : "Jackson",
+					    "first_name": "Lamar",
+					    "display_name": "Lamar Jackson",
+					    "position": "QB",
+					    "uniform_number": 8
+					},
+					{
+					    "last_name" : "Ingram",
+					    "first_name": "Mark",
+					    "display_name": "Mark Ingram",
+					    "position": "RB",
+					    "uniform_number": 21
+					},
+					{
+					    "last_name" : "Brown",
+					    "first_name": "Marquise",
+					    "display_name": "Marquise Brown",
+					    "position": "WR",
+					    "uniform_number": 15
+					}
+				]
+			},
+			{
+				"team_id" : "dallas-cowboys",
+					"league" : "nfl",
+					"abbreviation" : "DAL",
+			    "conference" : "NFC",
+			    "division": "east",
+			    "first_name" : "Dallas",
+			    "last_name" : "Cowboys",
+			    "nick_name" : "The Boys",
+			    "city" : "Dallas",
+			    "full_name" : "Dallas Cowboys",
+			    "players": [
+				    {
+					    "last_name" : "Prescott",
+					    "first_name": "Dak",
+					    "display_name": "Dak Prescott",
+					    "position": "QB",
+					    "uniform_number": 4
+					},
+					{
+					    "last_name" : "Elliot",
+					    "first_name": "Ezekiel",
+					    "display_name": "Ezekiel Elliot",
+					    "position": "RB",
+					    "uniform_number": 21
+					},
+					{
+					    "last_name" : "Cooper",
+					    "first_name": "Amari",
+					    "display_name": "Amari Cooper",
+					    "position": "WR",
+					    "uniform_number": 19
+					}
+				]
+			}
+		]
+	},
+	"mlb": {
+		"teams": []
+	},
+	"nba": {
+		"teams": []
+	},
+	"nhl": {
+		"teams": []
+	}
+}
