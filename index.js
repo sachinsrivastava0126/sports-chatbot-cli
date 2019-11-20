@@ -63,7 +63,7 @@ const SPORTS_RADAR_NFL_API_KEY = '2mkne3w4rbx39avqk9whkm73';
 const SPORTS_RADAR_NHL_API_KEY = 'm7zfrvkj86j964gv7rn2twkg';
 
 //base url
-const SPORTS_RADAR_NFL_API_BASE_URL = 'api.sportradar.us';
+const SPORTS_RADAR_API_BASE_URL = 'api.sportradar.us';
 
 
 
@@ -87,8 +87,39 @@ standard_input.on('data', function (data) {
         // Program exit.
         console.log("User input complete, program exit.");
         process.exit();
-    }else
-    {
+    } else if (data==="NFL\n" || data==="NBA\n"){
+
+        let sport = data.toLowerCase().replace("\n","");
+        let city;
+
+        db.ref('/context-stack/0/').update({
+            sport: sport
+        });
+
+        const getCity = snap => {
+            city = snap.val()
+        }
+
+        db.ref('/context-stack/0/city').on('value', getCity, error => console.log(error));
+
+
+        // find the team in the sport that plays for that city
+        let team = teamFromCity(sport, city);
+        if (sport==="nfl") {
+
+            
+            getNFLScoresOrStandings(team,'howDidTheBlankDo')
+            
+
+        } else {
+
+            getNBAScoresOrStandings(team,'howDidTheBlankDo')
+            
+        }
+
+
+
+    } else {
         
         // Check what kind of query the user has made
         let queryType = checkQueryType(data);
@@ -100,6 +131,13 @@ standard_input.on('data', function (data) {
     }
 });
 
+// when exit, reset context-stack to be none
+process.on('SIGINT', function() {
+    db.ref('/context-stack/0/').set({
+            sport: "none"
+    });
+    process.exit();
+});
 
 
 
@@ -143,10 +181,47 @@ function extractName(s, queryType) {
 
 }
 
+
+// gets nfl or nba team from city
+function teamFromCity(league,city){
+    let allTeams = allData[league].teams;
+    let numTeams = allTeams.length;
+
+    for (var i =0; i<numTeams; i++) {
+        if(city===allTeams[i].city) {
+
+            return allTeams[i].last_name;
+
+        }
+    }
+
+    let otherLeague = league==="nfl"? "nba" : "nfl";
+
+    let otherTeams = allData[otherLeague].teams;
+    let numOtherTeams = otherTeams.length;
+
+    for (var j=0; j < numOtherTeams; j++) {
+        console.log(otherTeams[j])
+        if(city===otherTeams[j].city) {
+
+            return otherTeams[j].last_name;
+
+        }
+
+
+    }
+    
+
+}
+
+
+
+
+
 // check if name is a player
 function isPlayer(s) {
     let allPlayers = [];
-    let allTeams = allData.nfl.teams;
+    let allTeams = allData.nfl.teams.concat(allData.nba.teams);
     let numTeams = allTeams.length;
     let playerTeam;
 
@@ -157,18 +232,18 @@ function isPlayer(s) {
 
             for (var j = 0; j < numTeamPlayers; j++) {
 
-                allPlayers.push([allTeams[i].players[j].display_name, allTeams[i].last_name]);
+                allPlayers.push([allTeams[i].players[j].display_name, allTeams[i].last_name, allTeams[i].players[j].league]);
 
             }
         }
 
     }
-
+    console.log(allPlayers)
 
     let numAllPlayerNames = allPlayers.length;
     for (var k=0; k < numAllPlayerNames; k++) {
         if (allPlayers[k][0].includes(s)) {
-            return [true, allPlayers[k][1]];
+            return [true, allPlayers[k][1], allPlayers[k][2]];
         }
     }
     return [false];
@@ -178,11 +253,11 @@ function isPlayer(s) {
 // check if name is a team
 function isTeam(s) {
     let allTeamNames = [];
-    let allTeams = allData.nfl.teams;
+    let allTeams = allData.nfl.teams.concat(allData.nba.teams);
     let numTeams = allTeams.length;
 
     for (var i = 0; i < numTeams; i++) {
-        allTeamNames.push(allTeams[i].full_name);
+        allTeamNames.push(allTeams[i].last_name);
         allTeamNames.push(allTeams[i].nick_name);
     }
 
@@ -196,10 +271,28 @@ function isTeam(s) {
 
 }
 
+
+// gets sport that the team
+function whichSport(team) {
+    let allTeamNames = [];
+    let allTeams = allData.nfl.teams.concat(allData.nba.teams);
+    let numTeams = allTeams.length;
+
+    for (var i = 0; i < numTeams; i++) {
+        if(allTeams[i].last_name.includes(team)) {
+            return allTeams[i].players[0].league;
+        }
+
+    }
+
+}
+
+
+
 // check if name is a city
 function isCity(s) {
     let allCities = [];
-    let allTeams = allData.nfl.teams;
+    let allTeams = allData.nfl.teams.concat(allData.nba.teams);
     let numTeams = allTeams.length;
 
     for (var i = 0; i < numTeams; i++) {
@@ -207,6 +300,7 @@ function isCity(s) {
         allCities.push(allTeams[i].city);
 
     }
+    console.log(allCities)
 
     if (allCities.includes(s)) {
         return true;
@@ -259,8 +353,317 @@ function getTeamNews(team) {
 }
 
 
+function getNBAScoresOrStandings(team, queryType) {
 
-function getPlayerGameStats(player, team, schedule, week) {
+    console.log('nba team to search for: ',team);
+
+
+
+    //we can get the year and season-type from the available seasons endpoint (get the last JSON object that is returned)
+    let currYear = new Date().getFullYear().toString();
+    let currSeasonType;
+
+    const seasonsOptions = {
+        hostname: SPORTS_RADAR_API_BASE_URL,
+        path: '/nba/trial/v7/en/league/seasons.json?api_key='+SPORTS_RADAR_NBA_API_KEY,
+        method: 'GET'
+    }
+
+    const seasonsReq = https.request(seasonsOptions, (res) => {
+        // console.log(options);
+        console.log('nba seasons statusCode: ', res.statusCode);
+        // console.log('seasons headers: ', res.headers);
+
+
+        res.on('data', (d) => {
+            let seasons = JSON.parse(d.toString()).seasons;
+            currSeasonType = seasons[seasons.length-1].type.code;
+
+            console.log('it is currently the nba '+currSeasonType+' season in '+currYear)
+
+
+            // have to delay program execution so that don't go over 1 Qps limit imposed by SportsRadar API when we make req below
+            var wait = ms => new Promise((r, j)=>setTimeout(r, ms));
+            (async () => { 
+
+                await wait(1000);   
+
+                
+                // given the year and season type we can get the schedule for that season (ultimately to get the current week)
+                let schedule;
+                const scheduleOptions = {
+                    hostname: SPORTS_RADAR_API_BASE_URL,
+                    path: '/nba/trial/v7/en/games/'+currYear+'/'+currSeasonType+'/schedule.json?api_key='+SPORTS_RADAR_NBA_API_KEY,
+                    method: 'GET'
+                }
+
+                const scheduleReq = https.request(scheduleOptions, (res) => {
+                    // console.log(options);
+                    console.log('nba schedule statusCode: ', res.statusCode);
+                    // console.log('schedule headers: ', res.headers);
+
+                    // create array for all data
+                    let chunks = [];
+
+                    res.on('data', function (d) {
+                        
+                        // append to that array
+                        chunks.push(d);
+
+
+
+                    }).on('end', function () {
+
+                        //create buffer from the bytes in the chunks array ONLY AFTER all of it has been received then cast to string and parse JSON object
+                        let d = Buffer.concat(chunks);
+                        let schedule = JSON.parse(d.toString()).games;
+                        let numGames = schedule.length;
+                        let nearestUpcoming;
+                        let game;
+                        let home;
+                        let away;
+                        let homeScore;
+                        let awayScore;
+                        console.log(schedule)
+
+
+
+
+                       /* 1. Iterate through the games for that season's schedule
+                          2. Find the first game that is "scheduled" and get that index
+                          3. Iterate backwards through the games until you find a game that has that team
+                          4. Get news on that team using that game's info 
+                          5. Break */ 
+                          for (var i = 0; i < numGames; i++) {
+                            if (schedule[i].status==="scheduled") {
+                                nearestUpcoming = i;
+                                break;
+                            }
+
+                          }
+
+
+                          for (var j = nearestUpcoming; j > -1; j--) {
+                            if (schedule[j].home.name.includes(team) || schedule[j].away.name.includes(team)) {
+                                console.log(schedule[j])
+                                game = schedule[j]
+                                home = game.home;
+                                away = game.away;
+                                break;
+
+                            }
+
+                          }
+
+
+                          let gameID = game.id;
+                          let status = game.status;
+
+                          // have to delay program execution so that don't go over 1 Qps limit imposed by SportsRadar API when we make req below
+                        
+                          /* If the game is going on then get the current score and console.log it */
+                          if (status==='inprogress' || status==='halftime') {
+
+                            // have to delay program execution so that don't go over 1 Qps limit imposed by SportsRadar API when we make req below
+                            var wait = ms => new Promise((r, j)=>setTimeout(r, ms));
+                            (async () => { 
+
+                                await wait(1000);
+                                const liveScoreOptions =  {
+                                    hostname: SPORTS_RADAR_API_BASE_URL,
+                                    path: '/nba/trial/v7/en/games/'+gameID+'/boxscore.json?api_key='+SPORTS_RADAR_NBA_API_KEY,
+                                    method: 'GET'
+                                }
+
+                                const liveScoreReq = https.request(liveScoreOptions, (res) => {
+                                    console.log('nba livescore statusCode: ', res.statusCode);
+                                    let chunks = [];
+
+                                     res.on('data', function (d) {
+                                                            
+                                        // append to that array
+                                        chunks.push(d);
+
+                                    }).on('end', function () {
+                                        let d = Buffer.concat(chunks);
+                                        let gameData = JSON.parse(d.toString())
+
+                                        
+
+                                        homeScore = gameData.home.points;
+                                        awayScore = gameData.away.points;
+
+                                        // Log the current score in the game
+                                        console.log('The current score is: '+gameData.home.name+': '+gameData.home.points+' '+gameData.away.name+': '+gameData.away.points);
+
+
+
+                                    });
+
+                               });
+
+                                liveScoreReq.on('error', (e) => {
+                                    console.log(e);
+                                });
+
+                                liveScoreReq.end();
+
+                            })();
+
+                         } else {
+
+
+                            if (queryType==="howDidTheBlankDo" || queryType==="howDidBlankDo") {
+                                // have to delay program execution so that don't go over 1 Qps limit imposed by SportsRadar API when we make req below
+                                var wait = ms => new Promise((r, j)=>setTimeout(r, ms));
+                                (async () => {
+                                    await wait(1000);
+
+                                    const previousScoreOptions = {
+                                        hostname: SPORTS_RADAR_API_BASE_URL,
+                                        path: '/nba/trial/v7/en/games/'+gameID+'/boxscore.json?api_key='+SPORTS_RADAR_NBA_API_KEY,
+                                        method: 'GET'
+                                    }
+
+                                    const previousScoreReq = https.request(previousScoreOptions, (res) => {
+                                        console.log('nba recent score statusCode: ', res.statusCode);
+
+                                        let chunks = [];
+
+                                         res.on('data', function (d) {
+                                                                
+                                            // append to that array
+                                            chunks.push(d);
+
+                                        }).on('end', function () {
+                                            let d = Buffer.concat(chunks);
+                                            let gameData = JSON.parse(d.toString())
+
+                                            
+
+                                            homeScore = gameData.home.points;
+                                            awayScore = gameData.away.points;
+
+                                            let higherScore = homeScore > awayScore? homeScore: awayScore;
+                                            let lowerScore = homeScore < awayScore? homeScore: awayScore;
+                                            let newsQueryString = home.name.split(' ')[home.name.split(' ').length-1]+'+'+away.name.split(' ')[away.name.split(' ').length-1]+'+'+higherScore+'-'+lowerScore;
+
+                                            
+
+
+                                            request({
+                                                     "url": `${GOOGLE_NEWS_API_BASE_URL}everything?apiKey=${GOOGLE_NEWS_API_KEY}&q=`+newsQueryString,
+                                                     "method": "GET"
+                                                 }, (err, res, body) => {
+
+                                                    let articles = JSON.parse(body).articles;
+                                                    let numArticles = articles.length;
+
+                                                     if (numArticles > 0) {
+
+                                                        for (var i =0; i < numArticles; i++) {
+
+                                                            if (articles[i].title && articles[i].description && articles[i].content && (articles[i].title.includes(higherScore+"-"+lowerScore) || articles[i].description.includes(higherScore+"-"+lowerScore) ||
+                                                                articles[i].content.includes(higherScore+"-"+lowerScore))) {
+                                                                
+
+                                                                // ***************** TO DO: FORMAT THIS NICELY SO PRINTS PRETTY IN CONSOLE ***************** //
+                                                                console.log(articles[i]);
+                                                            }
+
+                                                        }
+       
+                                                        
+                                                    } else {
+                                                        console.log("\n\n"+"Hmm...I'm pretty dumb so I didn't find anything recent on the ".white.bold.bgRed+team.white.bold.bgRed+". Try asking Google!".white.bold.bgRed+"\n\n");
+                                                    }
+                                                
+                                                     if (err){
+                                                         console.log("News API Error: ", err);
+                                                     }
+                                            });
+
+
+                                        });
+
+
+                                    });
+
+                                    previousScoreReq.on('error', (e) => {
+                                        console.log(e);
+                                    });
+
+                                    previousScoreReq.end();
+
+
+                                })();
+
+                            } else if (queryType==="howAreTheBlankDoing") {
+
+                                /* Get Standings Information*/
+                                console.log('getting nba standings info for the '+team)
+
+
+
+                            }
+
+
+                         }
+
+
+
+
+
+                          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    });
+
+
+                });
+
+                scheduleReq.on('error', (e) => {
+                  console.error(e);
+                });
+
+                scheduleReq.end();
+
+            })();  
+
+
+        });
+
+
+    });
+
+
+    seasonsReq.on('error', (e) => {
+      console.error(e);
+    });
+
+    seasonsReq.end();
+
+}
+
+
+
+
+
+function getNFLPlayerGameStats(player, team, schedule, week) {
 
     let weekGames = schedule[week].games;
     let numGames = weekGames.length;
@@ -283,7 +686,7 @@ function getPlayerGameStats(player, team, schedule, week) {
     // if we didn't find the team in this week, they must be on a bye so search last week
     // otherwise get the previous week's games, search for that team's game and return the players stats from most recent game
     if (!foundTeam) {
-        getPlayerGameStats(player, team, schedule, week-1);
+        getNFLPlayerGameStats(player, team, schedule, week-1);
 
     }
 
@@ -292,7 +695,7 @@ function getPlayerGameStats(player, team, schedule, week) {
 
     // First need to find the position of the player because then we can map positions to statistical categories in firebase
     const playerPositionOptions = {
-        hostname: SPORTS_RADAR_NFL_API_BASE_URL,
+        hostname: SPORTS_RADAR_API_BASE_URL,
         path: '/nfl/official/trial/v5/en/games/'+gameID+'/roster.json?api_key='+SPORTS_RADAR_NFL_API_KEY,
         method: 'GET'
     }
@@ -321,8 +724,15 @@ function getPlayerGameStats(player, team, schedule, week) {
                 let allGamePlayers = homePlayers.concat(awayPlayers);
                 let numGamePlayers = allGamePlayers.length;
 
-                // Add something like this to firebase
-                let posToStat = {"WR": "receiving", "QB":  "passing", "RB": "rushing"};
+                // Getting position to stat category map from firebase
+                let posToStat;
+                const loadMap = snap => {
+                  if (snap.val()) {
+                    posToStat = snap.val();
+                    // console.log(posToStat)
+                  }
+                }
+                db.ref('/nfl/posToStat').on('value', loadMap, error => console.log(error));
 
                 // Find the position that the player plays and query the mapping in firebase to find out stat. key (e.g. "WR" in NFL maps to "receiving" stats)
                 for (var i = 0; i < numGamePlayers; i++) {
@@ -335,12 +745,11 @@ function getPlayerGameStats(player, team, schedule, week) {
                 }
 
                 // Get stat category to search for
-                let statCategory = posToStat[playerPosition];
+                let statCategory = posToStat[playerPosition][0];
 
-                
                 // check if the game includes the team in question
                 const gameStatsOptions = {
-                    hostname: SPORTS_RADAR_NFL_API_BASE_URL,
+                    hostname: SPORTS_RADAR_API_BASE_URL,
                     path: '/nfl/official/trial/v5/en/games/'+gameID+'/statistics.json?api_key='+SPORTS_RADAR_NFL_API_KEY,
                     method: 'GET'
                 }
@@ -374,6 +783,7 @@ function getPlayerGameStats(player, team, schedule, week) {
                             let playerTeam = JSON.parse(d.toString()).statistics.home.name.includes(team) ? "home" : "away";
                             let playerPositionStats = JSON.parse(d.toString()).statistics[playerTeam][statCategory].players;
                             let numPlayerPositionStats = playerPositionStats.length;
+                            let playerStats;
 
                             
 
@@ -383,9 +793,113 @@ function getPlayerGameStats(player, team, schedule, week) {
 
                                 // ********************** TO-DO: LOG THIS TO CONSOLE IN PRETTY MANNER ********************** //
                                 if (playerPositionStats[i].name.includes(player)) {
+                                    playerStats = playerPositionStats[i];
                                     console.log(playerPositionStats[i])
+                                    break;
                                 }
                             }
+
+
+
+
+
+                            // Get news using the stat-line of the player to filter results
+                            request({
+                                     "url": `${GOOGLE_NEWS_API_BASE_URL}everything?apiKey=${GOOGLE_NEWS_API_KEY}&q=`+player.split(' ')[0]+'+'+player.split(' ')[1]+'&sortBy=publishedAt',
+                                     "method": "GET"
+                                    }, (err, res, body) => {
+
+
+                                        let keywords;
+                                        const loadKeywords = snap => {
+                                          if (snap.val()) {
+                                            keywords = snap.val();
+                                            console.log(keywords)
+                                          }
+                                        }
+                                        db.ref('/nfl/posToStat/'+playerPosition).on('value', loadKeywords, error => console.log(error));
+
+
+                                        let numKeywords = keywords.length;
+                                        for (var i=0; i < numKeywords; i++) {
+
+                                            if (playerStats[keywords[i]]) {
+                                                keywords.push(playerStats[keywords[i]]);
+                                            }
+
+                                        }
+
+                                        console.log(keywords);
+
+
+                                        let articles = JSON.parse(body).articles;
+                                        let numArticles = articles.length;
+
+                                         if (numArticles > 0) {
+
+
+                                            // Filter the articles
+                                            let toInclude = article => {
+                                                return article.title.includes(player) ? true : 
+                                                            keywords.some(element => article.title.includes(element) || article.description.includes(element)) && article.description.includes(player) ? 
+                                                            true : 
+                                                            false;
+                                            }
+
+                                            let filteredArticles = articles.filter(toInclude);
+                                            let numFilteredArticles = filteredArticles.length;
+
+
+
+                                            if (numFilteredArticles>0) {
+
+
+
+                                                // ******************* TO-DO: MAKE OUTPUT PRETTIER FORMAT ********************* //
+                                                console.log(filteredArticles)
+
+
+                                            } else {
+
+                                                // If the initial filter is too narrow then loosen scope
+                                                let lessNarrowFilter = article => {
+
+                                                    return article.title.includes(player) || article.description.includes(player) || article.content.includes(player)
+                                                }   
+
+                                                let newFilteredArticles = articles.filter(lessNarrowFilter);
+                                                let numNewFilteredArticles = newFilteredArticles.length;
+
+                                                if (numNewFilteredArticles > 0) {
+                                                    // ******************* TO-DO: MAKE OUTPUT PRETTIER FORMAT ********************* //
+                                                    console.log(newFilteredArticles);
+                                                } else {
+                                                    // If less narrow filter still to narrow then just print the stats from most recent game
+
+                                                    // ******************* TO-DO: MAKE OUTPUT PRETTIER FORMAT ********************* //
+                                                    console.log(playerStats);
+                                                }
+
+                                            }
+
+
+
+
+
+
+
+
+                                            
+                                            
+                                        } else {
+                                            console.log("\n\n"+"Hmm...I'm pretty dumb so I didn't find anything recent on the ".white.bold.bgRed+team.white.bold.bgRed+". Try asking Google!".white.bold.bgRed+"\n\n");
+                                             
+                                        }
+                                    
+                                         if (err){
+                                             console.log("News API Error: ", err);
+                                         }
+                                });
 
                         
 
@@ -405,7 +919,7 @@ function getPlayerGameStats(player, team, schedule, week) {
                     // if we didn't find the team in this week, they must be on a bye so search last week
                     // otherwise get the previous week's games, search for that team's game and return the players stats from most recent game
                     if (!foundTeam) {
-                        getPlayerGameStats(player, team, schedule, week-1);
+                        getNFLPlayerGameStats(player, team, schedule, week-1);
 
 
                     }
@@ -448,14 +962,14 @@ function getPlayerGameStats(player, team, schedule, week) {
 
 
 // Gets news about a specific player
-function getPlayerNews(player, team) { 
+function getNFLPlayerNews(player, team) { 
 
 //we can get the year and season-type from the available seasons endpoint (get the last JSON object that is returned)
     let currYear = new Date().getFullYear().toString();
     let currSeasonType;
 
     const seasonsOptions = {
-        hostname: SPORTS_RADAR_NFL_API_BASE_URL,
+        hostname: SPORTS_RADAR_API_BASE_URL,
         path: '/nfl/official/trial/v5/en/league/seasons.json?api_key='+SPORTS_RADAR_NFL_API_KEY,
         method: 'GET'
     }
@@ -481,7 +995,7 @@ function getPlayerNews(player, team) {
                 // given the year and season type we can get the schedule for that season (ultimately to get the current week)
                 let schedule;
                 const scheduleOptions = {
-                    hostname: SPORTS_RADAR_NFL_API_BASE_URL,
+                    hostname: SPORTS_RADAR_API_BASE_URL,
                     path: '/nfl/official/trial/v5/en/games/'+currYear+'/'+currSeasonType+'/schedule.json?api_key='+SPORTS_RADAR_NFL_API_KEY,
                     method: 'GET'
                 }
@@ -537,7 +1051,7 @@ function getPlayerNews(player, team) {
 
                                     // We know if game isn't in progress, at half, or complete then it is yet to be played in the current week. So 
                                     // get stat information about player from last week's game
-                                    getPlayerGameStats(player, team, schedule, currWeek-2);
+                                    getNFLPlayerGameStats(player, team, schedule, currWeek-2);
 
 
                                 }
@@ -585,15 +1099,17 @@ function getPlayerNews(player, team) {
 
 
 // gets scores/standings related articles given a team
-function getScoresOrStandings(team, queryType) {
+function getNFLScoresOrStandings(team, queryType) {
     console.log('team to search for: ',team);
+
+
 
     //we can get the year and season-type from the available seasons endpoint (get the last JSON object that is returned)
     let currYear = new Date().getFullYear().toString();
     let currSeasonType;
 
     const seasonsOptions = {
-        hostname: SPORTS_RADAR_NFL_API_BASE_URL,
+        hostname: SPORTS_RADAR_API_BASE_URL,
         path: '/nfl/official/trial/v5/en/league/seasons.json?api_key='+SPORTS_RADAR_NFL_API_KEY,
         method: 'GET'
     }
@@ -619,7 +1135,7 @@ function getScoresOrStandings(team, queryType) {
                 // given the year and season type we can get the schedule for that season (ultimately to get the current week)
                 let schedule;
                 const scheduleOptions = {
-                    hostname: SPORTS_RADAR_NFL_API_BASE_URL,
+                    hostname: SPORTS_RADAR_API_BASE_URL,
                     path: '/nfl/official/trial/v5/en/games/'+currYear+'/'+currSeasonType+'/schedule.json?api_key='+SPORTS_RADAR_NFL_API_KEY,
                     method: 'GET'
                 }
@@ -682,7 +1198,7 @@ function getScoresOrStandings(team, queryType) {
                                     } else if (queryType==="howAreTheBlankDoing") {
 
 
-                                        getStandings(team, currYear);
+                                        getNFLStandings(team, currYear);
 
                                     }
 
@@ -703,7 +1219,7 @@ function getScoresOrStandings(team, queryType) {
 
                             } else if (queryType==="howAreTheBlankDoing") {
 
-                                getStandings(team, currYear);
+                                getNFLStandings(team, currYear);
 
                             }
                         }
@@ -738,10 +1254,10 @@ function getScoresOrStandings(team, queryType) {
 
 
 // gets the current standings info for the given team
-function getStandings(team, currYear) {
+function getNFLStandings(team, currYear) {
 
     const standingsOptions = {
-        hostname: SPORTS_RADAR_NFL_API_BASE_URL,
+        hostname: SPORTS_RADAR_API_BASE_URL,
         path: '/nfl/official/trial/v5/en/seasons/'+currYear+'/standings.json?api_key='+SPORTS_RADAR_NFL_API_KEY,
         method: 'GET'
     }
@@ -874,7 +1390,8 @@ function getPrevWeekScore(team, schedule, prevWeek) {
                     console.log("\n\nHere are the latest headlines for the".green.bold+" "+team.green.bold+":");
                     for (var i=0; i < numArticles; i++) {
 
-                        if (articles[i].title.includes(higherScore+"-"+lowerScore) || articles[i].description.includes(higherScore+"-"+lowerScore)) {
+                        if (articles[i].title && articles[i].description && articles[i].content && (articles[i].title.includes(higherScore+"-"+lowerScore) || articles[i].description.includes(higherScore+"-"+lowerScore) ||
+                            articles[i].content.includes(higherScore+"-"+lowerScore))) {
                             
 
                             // ***************** TO DO: FORMAT THIS NICELY SO PRINTS PRETTY IN CONSOLE ***************** //
@@ -966,19 +1483,160 @@ function getTheLatest(data, queryType) {
 
     // get name of team or player from the data user enters
     let name = extractName(data, queryType);
+    let context;
+
+    //check context stack
+    const loadContext = snap => {
+      if (snap.val()) {
+        console.log(snap.val())
+        context = snap.val();
+      }
+    }
+
+    db.ref('/context-stack/0/sport').on('value', loadContext, error => console.log(error));
 
     // depending on the query type, make that kind of request
     if (queryType==="howDidTheBlankDo") {
 
-        // want previous week's score or current score
-        getScoresOrStandings(name, queryType);
+        // get sport you think it is based on knowledge base
+        let sport = whichSport(name)
+        console.log('queryType, sport: ',queryType,sport)
 
+
+        // if context-stack empty
+        if (context==="none") {
+
+
+            if (sport==="nfl") {
+
+                // push sport to context-stack
+                db.ref('/context-stack/0/').set({
+                    sport: sport
+                });
+
+                // want previous week's score or current score
+                getNFLScoresOrStandings(name, queryType);
+            } else {
+                db.ref('/context-stack/0/').set({
+                            sport: sport
+                        });
+                
+                getNBAScoresOrStandings(name,queryType)
+                console.log('context===none, getting nba scores/standings for ',name ,queryType)
+            }
+
+        } else {
+
+            // if context-stack isn't the same as your knowledge base, prefer knowledge base
+            if (context!=sport) {
+
+                if (sport==="nfl") {
+
+                    // push sport to context-stack
+                    db.ref('/context-stack/0/').set({
+                        sport: sport
+                    });
+
+                    // want previous week's score or current score
+                    getNFLScoresOrStandings(name, queryType);
+                } else {
+                    db.ref('/context-stack/0/').set({
+                            sport: sport
+                        });
+                   
+                    getNBAScoresOrStandings(name,queryType)
+                    console.log('context!=sport, getting nba scores/standings for ',name,queryType)
+                }
+
+            } else {
+
+                if (sport==="nfl") {
+
+                    // want previous week's score or current score
+                    getNFLScoresOrStandings(name, queryType);
+                } else {
+                    
+                    
+                    getNBAScoresOrStandings(name,queryType)
+                    console.log('context===sport, getting nba scores/standings for ',name,queryType)
+                }
+
+            }
+
+        }
         
 
     } else if (queryType==="howAreTheBlankDoing") {
 
-        // want standings or current score
-        getScoresOrStandings(name, queryType);
+        // get sport you think it is based on knowledge base
+        let sport = whichSport(name)
+        console.log('queryType, sport: ',queryType,sport)
+
+
+        // if context-stack empty
+        if (context==="none") {
+
+
+            if (sport==="nfl") {
+
+                // push sport to context-stack
+                db.ref('/context-stack/0/').set({
+                    sport: sport
+                });
+
+                // want previous week's score or current score
+                getNFLScoresOrStandings(name, queryType);
+            } else {
+                db.ref('/context-stack/0/').set({
+                        sport: sport
+                    });
+                
+                getNBAScoresOrStandings(name,queryType)
+                console.log('context===none, getting nba scores/standings for ',name,queryType)
+            }
+
+        } else {
+
+            // if context-stack isn't the same as your knowledge base, prefer knowledge base
+            if (context!=sport) {
+
+                if (sport==="nfl") {
+
+                    // push sport to context-stack
+                    db.ref('/context-stack/0/').set({
+                        sport: sport
+                    });
+
+                    // want previous week's score or current score
+                    getNFLScoresOrStandings(name, queryType);
+                } else {
+                    db.ref('/context-stack/0/').set({
+                            sport: sport
+                        });
+                    
+                    getNBAScoresOrStandings(name,queryType)
+                    console.log('context!=sport, getting nba scores/standings for ',name,queryType)
+                }
+
+            } else { // if context-stack and knowledge base agree, then continue
+
+                if (sport==="nfl") {
+
+                    // push sport to context-stack
+                    db.ref('/context-stack/0/').set({
+                        sport: sport
+                    });
+                    // want previous week's score or current score
+                    getNFLScoresOrStandings(name, queryType);
+                } else {
+                    
+                    getNBAScoresOrStandings(name,queryType)
+                    console.log('context==sport, getting nba scores/standings for ',name,queryType)
+                }
+
+            }
+
+        }
 
 
     } else if (queryType==="howDidBlankDo") {
@@ -987,25 +1645,158 @@ function getTheLatest(data, queryType) {
         // need to check if the relevant name in the query is a team, player, or city
         if (isTeam(name)) {
 
-            // if it's a team then want to get the scores/standings news
-            getScoresOrStandings(name, queryType);
-            
+            // get sport you think it is based on knowledge base
+            let sport = whichSport(name)
+            console.log('queryType, sport: ',queryType,sport)
+
+
+            // if context-stack empty
+            if (context==="none") {
+
+
+                if (sport==="nfl") {
+
+                    // push sport to context-stack
+                    db.ref('/context-stack/0/').set({
+                        sport: sport
+                    });
+
+                    // want previous week's score or current score
+                    getNFLScoresOrStandings(name, queryType);
+                } else {
+                        db.ref('/context-stack/0/').set({
+                            sport: sport
+                        });
+
+                        getNBAScoresOrStandings(name,queryType)
+                        console.log('context===none, getting nba scores/standings for ',name,queryType)
+                }
+
+            } else {
+
+                // if context-stack isn't the same as your knowledge base, prefer knowledge base
+                if (context!=sport) {
+
+                    if (sport==="nfl") {
+
+                        // push sport to context-stack
+                        db.ref('/context-stack/0/').set({
+                            sport: sport
+                        });
+
+                        // want previous week's score or current score
+                        getNFLScoresOrStandings(name, queryType);
+                    } else {
+                        db.ref('/context-stack/0/').set({
+                            sport: sport
+                        });
+                        
+                        getNBAScoresOrStandings(name,queryType)
+                        console.log('context!=sport, getting nba scores/standings for ',name,queryType)
+                    }
+
+                } else { // if context-stack and knowledge base agree, then continue
+
+                    if (sport==="nfl") {
+
+                        // want previous week's score or current score
+                        getNFLScoresOrStandings(name, queryType);
+                    } else {
+
+                        getNBAScoresOrStandings(name,queryType)
+                        console.log('context===sport, getting nba scores/standings for ',name,queryType)
+                    }
+
+
+                }
+
+            } 
 
 
         } else if (isPlayer(name)[0]) {
 
-            // if it's a player we want an article on how the player did
-            getPlayerNews(name, isPlayer(name)[1])
-            console.log('player!')
+            let sport = isPlayer(name)[2];
+            console.log('queryType, sport: ',queryType,sport)
+            if (sport==="nfl") {
+                console.log('nfl player!')
+
+                // push sport to context-stack
+                db.ref('/context-stack/0/').set({
+                    sport: sport
+                });
+
+                // if it's a player we want an article on how the player did
+                getNFLPlayerNews(name, isPlayer(name)[1])
+            } else {
+                    db.ref('/context-stack/0/').set({
+                        sport: sport
+                    });
+                    // *************************** TO-DO: NBA PLAYER NEWS *************************** //
+                    // *************************** TO-DO: NBA PLAYER NEWS *************************** //
+                    // *************************** TO-DO: NBA PLAYER NEWS *************************** //
+                    console.log('getting nba player news...')
+            }
+
+            
 
         } else if (isCity(name)) {
 
             /* if it's a city then: 
-             1. ask which sport
+             1. check context stack for the sport
              2. check which sport is on (optional)
              3. get scores/standings news from the team from that city with that sport*/
 
-            console.log('city!')
+             console.log('city!')
+             // if context-stack empty, ask which league
+            if (context==="none") {
+                console.log('Is this team in the NFL or NBA?')
+                db.ref('/context-stack/0/').update({
+                    city: name
+                });
+            } else {
+
+                let team = teamFromCity(context, name)
+                let sport = whichSport(team)
+
+                // if context-stack isn't the same as your knowledge base, prefer knowledge base
+                if (context!=sport) {
+
+                    if (sport==="nfl") {
+
+                        // push sport to context-stack
+                        db.ref('/context-stack/0/').set({
+                            sport: sport
+                        });
+
+                        // want previous week's score or current score
+                        getNFLScoresOrStandings(name, queryType);
+                    } else {
+                        db.ref('/context-stack/0/').set({
+                            sport: sport
+                        });
+
+                        getNBAScoresOrStandings(name,queryType)
+                        console.log('context!=sport, getting nba scores/standings for ',team,queryType)
+                    }
+
+                } else { // if context-stack and knowledge base agree, then continue
+
+                    if (sport==="nfl") {
+
+                        // want previous week's score or current score
+                        getNFLScoresOrStandings(name, queryType);
+                    } else {
+                        
+
+                        getNBAScoresOrStandings(name,queryType)
+                        console.log('context===sport, getting nba scores/standings for ',team, queryType)
+                    }
+
+                }
+
+
+            }
+            
 
         }
 

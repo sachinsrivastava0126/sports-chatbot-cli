@@ -1,121 +1,213 @@
 {
-	"nfl": {
-		"teams": 
-		[
-			{
-				"team_id" : "new-england-patriots",
-				"league": "nfl",
-			    "abbreviation" : "NE",
-			    "conference" : "AFC",
-			    "division": "east",
-			    "first_name" : "New England",
-			    "last_name" : "Patriots",
-			    "nick_name" : "Pats",
-			    "city" : "New England",
-			    "full_name" : "New England Patriots",
-			    "players": [
-				    {
-					    "last_name" : "Brady",
-					    "first_name": "Tom",
-					    "display_name": "Tom Brady",
-					    "position": "QB",
-					    "uniform_number": 12
-					},
-					{
-					    "last_name" : "White",
-					    "first_name": "James",
-					    "display_name": "James White",
-					    "position": "RB",
-					    "uniform_number": 28
-					},
-					{
-					    "last_name" : "Edelman",
-					    "first_name": "Julian",
-					    "display_name": "Julian Edelman",
-					    "position": "WR",
-					    "uniform_number": 11
-					}
-				]
-			},
-			{
-				"team_id" : "baltimore-ravens",
-				"league": "nfl",
-			    "abbreviation" : "BAL",
-			    "conference" : "AFC",
-			    "division": "north",
-			    "first_name" : "Baltimore",
-			    "last_name" : "Ravens",
-			    "nick_name" : "Ravens",
-			    "city" : "Baltimore",
-			    "full_name" : "Baltimore Ravens",
-			    "players": [
-				    {
-					    "last_name" : "Jackson",
-					    "first_name": "Lamar",
-					    "display_name": "Lamar Jackson",
-					    "position": "QB",
-					    "uniform_number": 8
-					},
-					{
-					    "last_name" : "Ingram",
-					    "first_name": "Mark",
-					    "display_name": "Mark Ingram",
-					    "position": "RB",
-					    "uniform_number": 21
-					},
-					{
-					    "last_name" : "Brown",
-					    "first_name": "Marquise",
-					    "display_name": "Marquise Brown",
-					    "position": "WR",
-					    "uniform_number": 15
-					}
-				]
-			},
-			{
-				"team_id" : "dallas-cowboys",
-				"league": "nfl",
-			    "abbreviation" : "DAL",
-			    "conference" : "NFC",
-			    "division": "east",
-			    "first_name" : "Dallas",
-			    "last_name" : "Cowboys",
-			    "nick_name" : "The Boys",
-			    "city" : "Dallas",
-			    "full_name" : "Dallas Cowboys",
-			    "players": [
-				    {
-					    "last_name" : "Prescott",
-					    "first_name": "Dak",
-					    "display_name": "Dak Prescott",
-					    "position": "QB",
-					    "uniform_number": 4
-					},
-					{
-					    "last_name" : "Elliot",
-					    "first_name": "Ezekiel",
-					    "display_name": "Ezekiel Elliot",
-					    "position": "RB",
-					    "uniform_number": 21
-					},
-					{
-					    "last_name" : "Cooper",
-					    "first_name": "Amari",
-					    "display_name": "Amari Cooper",
-					    "position": "WR",
-					    "uniform_number": 19
-					}
-				]
-			}
-		]
-	},
-	"mlb": {
-		"teams": []
-	},
-	"nba": {
-		"teams": []
-	},
-	"nhl": {
-		"teams": []
-	}
+  "context-stack" : [ {
+    "sport" : "none"
+  } ],
+  "nfl" : {
+    "posToStat" : {
+      "QB" : [ "passing", "completions", "yards", "touchdowns", "interceptions", "rating", "sacks" ],
+      "RB" : [ "rushing", "attempts", "yards", "touchdowns", "avg_yards" ],
+      "WR" : [ "receiving", "receptions", "yards", "touchdowns", "targets", "avg_yds" ]
+    },
+    "teams" : [ 
+    {
+      "abbreviation" : "NE",
+      "city" : "New England",
+      "conference" : "AFC",
+      "division" : "east",
+      "first_name" : "New England",
+      "full_name" : "New England Patriots",
+      "last_name" : "Patriots",
+      "nick_name" : "Pats",
+      "players" : [ {
+        "display_name" : "Tom Brady",
+        "first_name" : "Tom",
+        "last_name" : "Brady",
+        "league" : "nfl",
+        "position" : "QB",
+        "uniform_number" : 12
+      }, {
+        "display_name" : "James White",
+        "first_name" : "James",
+        "last_name" : "White",
+        "league" : "nfl",
+        "position" : "RB",
+        "uniform_number" : 28
+      }, {
+        "display_name" : "Julian Edelman",
+        "first_name" : "Julian",
+        "last_name" : "Edelman",
+        "league" : "nfl",
+        "position" : "WR",
+        "uniform_number" : 11
+      } ],
+      "team_id" : "new-england-patriots"
+    }, {
+      "abbreviation" : "LAR",
+      "city" : "Los Angeles",
+      "conference" : "NFC",
+      "division" : "west",
+      "first_name" : "Los Angeles",
+      "full_name" : "Los Angeles Rams",
+      "last_name" : "Rams",
+      "nick_name" : "Rams",
+      "players" : [ {
+        "display_name" : "Jared Goff",
+        "first_name" : "Jared",
+        "last_name" : "Goff",
+        "league" : "nfl",
+        "position" : "QB",
+        "uniform_number" : 16
+      }, {
+        "display_name" : "Todd Gurley",
+        "first_name" : "Todd",
+        "last_name" : "Gurley",
+        "league" : "nfl",
+        "position" : "RB",
+        "uniform_number" : 30
+      }, {
+        "display_name" : "Cooper Kupp",
+        "first_name" : "Cooper",
+        "last_name" : "Kupp",
+        "league" : "nfl",
+        "position" : "WR",
+        "uniform_number" : 18
+      } ],
+      "team_id" : "baltimore-ravens"
+    }, {
+      "abbreviation" : "DAL",
+      "city" : "Dallas",
+      "conference" : "NFC",
+      "division" : "east",
+      "first_name" : "Dallas",
+      "full_name" : "Dallas Cowboys",
+      "last_name" : "Cowboys",
+      "nick_name" : "The Boys",
+      "players" : [ {
+        "display_name" : "Dak Prescott",
+        "first_name" : "Dak",
+        "last_name" : "Prescott",
+        "league" : "nfl",
+        "position" : "QB",
+        "uniform_number" : 4
+      }, {
+        "display_name" : "Ezekiel Elliott",
+        "first_name" : "Ezekiel",
+        "last_name" : "Elliot",
+        "league" : "nfl",
+        "position" : "RB",
+        "uniform_number" : 21
+      }, {
+        "display_name" : "Amari Cooper",
+        "first_name" : "Amari",
+        "last_name" : "Cooper",
+        "league" : "nfl",
+        "position" : "WR",
+        "uniform_number" : 19
+      } ],
+      "team_id" : "dallas-cowboys"
+    } ]
+  },
+  "nba": {
+  	"teams": [
+  	{
+      "abbreviation" : "LAL",
+      "city" : "Los Angeles",
+      "conference" : "WESTERN CONFERENCE",
+      "division" : "Pacific",
+      "first_name" : "Los Angeles",
+      "full_name" : "Los Angeles Lakers",
+      "last_name" : "Lakers",
+      "nick_name" : "Lakers",
+      "players" : [ {
+        "display_name" : "LeBron James",
+        "first_name" : "LeBron",
+        "last_name" : "James",
+        "league" : "nba",
+        "position" : "PF",
+        "uniform_number" : 23
+      }, {
+        "display_name" : "Anthony Davis",
+        "first_name" : "Anthony",
+        "last_name" : "Davis",
+        "league" : "nba",
+        "position" : "C",
+        "uniform_number" : 3
+      }, {
+        "display_name" : "Danny Green",
+        "first_name" : "Danny",
+        "last_name" : "Green",
+        "league" : "nba",
+        "position" : "SG",
+        "uniform_number" : 14
+      } ],
+      "team_id" : "los-angeles-lakers"
+    },
+    {
+      "abbreviation" : "BOS",
+      "city" : "Boston",
+      "conference" : "EASTERN CONFERENCE",
+      "division" : "Atlantic",
+      "first_name" : "Boston",
+      "full_name" : "Boston Celtics",
+      "last_name" : "Celtics",
+      "nick_name" : "The C's",
+      "players" : [ {
+        "display_name" : "Jayson Tatum",
+        "first_name" : "Jayson",
+        "last_name" : "Taytum",
+        "league" : "nba",
+        "position" : "PF",
+        "uniform_number" : 0
+      }, {
+        "display_name" : "Marcus Smart",
+        "first_name" : "Marcus",
+        "last_name" : "Smart",
+        "league" : "nba",
+        "position" : "PG",
+        "uniform_number" : 36
+      }, {
+        "display_name" : "Jaylen Brown",
+        "first_name" : "Jaylen",
+        "last_name" : "Brown",
+        "league" : "nba",
+        "position" : "SF",
+        "uniform_number" : 7
+      } ],
+      "team_id" : "boston-celtics"
+    },
+    {
+      "abbreviation" : "HOU",
+      "city" : "Houston",
+      "conference" : "WESTERN CONFERENCE",
+      "division" : "Southwest",
+      "first_name" : "Houston",
+      "full_name" : "Houston Rockets",
+      "last_name" : "Rockets",
+      "nick_name" : "Rockets",
+      "players" : [ {
+        "display_name" : "James Harden",
+        "first_name" : "James",
+        "last_name" : "Harden",
+        "league" : "nba",
+        "position" : "PG",
+        "uniform_number" : 13
+      }, {
+        "display_name" : "Russell Westbrook",
+        "first_name" : "Russell",
+        "last_name" : "Westbrook",
+        "league" : "nba",
+        "position" : "PG",
+        "uniform_number" : 0
+      }, {
+        "display_name" : "Clint Capela",
+        "first_name" : "Clint",
+        "last_name" : "Capela",
+        "league" : "nba",
+        "position" : "C",
+        "uniform_number" : 15
+      } ],
+      "team_id" : "houston-rockets"
+    }
+	]
+  }
 }

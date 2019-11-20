@@ -17,6 +17,8 @@
   },
   "homepage": "https://github.com/sachinsrivastava0126/sports-chatbot-cli#readme",
   "dependencies": {
-    "firebase": "^7.3.0"
+    "cli-frames": "^2.2.9",
+    "firebase": "^7.3.0",
+    "terminal-image": "^0.2.0"
   }
 }
