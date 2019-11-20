@@ -39,19 +39,6 @@ const handleData = snap => {
 db.ref().on('value', handleData, error => console.log(error));
 
 
-/*
-
-    NOV. 6 CLASS NOTES:
-    - WE STILL WANT NEWS STORIES SO INSTEAD OF JUST RETURNING SCORE OR STANDINGS RETURN NEWS STORY MAYBE USING
-    THAT INFO?
-    - SET UP FIREBASE
-
-
-*/
-
-
-
-
 
 
 
@@ -353,6 +340,292 @@ function getTeamNews(team) {
 }
 
 
+function getNBAPlayerNews(player, team) {
+    console.log('nba team to search for: ',team);
+
+
+
+    //we can get the year and season-type from the available seasons endpoint (get the last JSON object that is returned)
+    let currYear = new Date().getFullYear().toString();
+    let currSeasonType;
+
+    const seasonsOptions = {
+        hostname: SPORTS_RADAR_API_BASE_URL,
+        path: '/nba/trial/v7/en/league/seasons.json?api_key='+SPORTS_RADAR_NBA_API_KEY,
+        method: 'GET'
+    }
+
+    const seasonsReq = https.request(seasonsOptions, (res) => {
+        // console.log(options);
+        console.log('nba seasons statusCode: ', res.statusCode);
+        // console.log('seasons headers: ', res.headers);
+
+
+        res.on('data', (d) => {
+            let seasons = JSON.parse(d.toString()).seasons;
+            currSeasonType = seasons[seasons.length-1].type.code;
+
+            // console.log('it is currently the nba '+currSeasonType+' season in '+currYear)
+
+
+            // have to delay program execution so that don't go over 1 Qps limit imposed by SportsRadar API when we make req below
+            var wait = ms => new Promise((r, j)=>setTimeout(r, ms));
+            (async () => { 
+
+                await wait(1000);   
+
+                // given the year and season type we can get the schedule for that season (ultimately to get the current week)
+                let schedule;
+                const scheduleOptions = {
+                    hostname: SPORTS_RADAR_API_BASE_URL,
+                    path: '/nba/trial/v7/en/games/'+currYear+'/'+currSeasonType+'/schedule.json?api_key='+SPORTS_RADAR_NBA_API_KEY,
+                    method: 'GET'
+                }
+
+                const scheduleReq = https.request(scheduleOptions, (res) => {
+                    // console.log(options);
+                    console.log('nba schedule statusCode: ', res.statusCode);
+                    // console.log('schedule headers: ', res.headers);
+
+                    // create array for all data
+                    let chunks = [];
+
+                    res.on('data', function (d) {
+                        
+                        // append to that array
+                        chunks.push(d);
+
+
+
+                    }).on('end', function () {
+
+                        //create buffer from the bytes in the chunks array ONLY AFTER all of it has been received then cast to string and parse JSON object
+                        let d = Buffer.concat(chunks);
+                        let schedule = JSON.parse(d.toString()).games;
+                        let numGames = schedule.length;
+                        let nearestUpcoming;
+                        let game;
+                        let home;
+                        let away;
+                        let homeScore;
+                        let awayScore;
+                        // console.log(schedule)
+
+
+
+
+                       /* 1. Iterate through the games for that season's schedule
+                          2. Find the first game that is "scheduled" and get that index
+                          3. Iterate backwards through the games until you find a game that has that team
+                          4. Get news on that team using that game's info 
+                          5. Break */ 
+                          for (var i = 0; i < numGames; i++) {
+                            if (schedule[i].status==="scheduled") {
+                                nearestUpcoming = i;
+                                break;
+                            }
+
+                          }
+
+
+                          for (var j = nearestUpcoming; j > -1; j--) {
+                            if (schedule[j].home.name.includes(team) || schedule[j].away.name.includes(team)) {
+                                //console.log(schedule[j])
+                                game = schedule[j]
+                                home = game.home;
+                                away = game.away;
+                                break;
+
+                            }
+
+                          }
+
+
+                          let gameID = game.id;
+                          let status = game.status;
+
+                          // have to delay bc of qps limit
+                          (async () =>{
+                            await wait(1000);
+
+                              const playerStatsOptions = {
+                                hostname: SPORTS_RADAR_API_BASE_URL,
+                                path: '/nba/trial/v7/en/games/'+gameID+'/summary.json?api_key='+SPORTS_RADAR_NBA_API_KEY,
+                                method: 'GET'
+                              }
+
+
+                              const playerStatsReq = https.request(playerStatsOptions, (res) => {
+                                // console.log(options);
+                                console.log('nba playerstats statusCode: ', res.statusCode);
+                                // console.log('schedule headers: ', res.headers);
+
+                                // create array for all data
+                                let chunks = [];
+
+                                res.on('data', function (d) {
+                                    
+                                    // append to that array
+                                    chunks.push(d);
+
+
+
+                                }).on('end', function() {
+                                    //create buffer from the bytes in the chunks array ONLY AFTER all of it has been received then cast to string and parse JSON object
+                                    let d = Buffer.concat(chunks);
+                                    let homePlayers = JSON.parse(d.toString()).home.players;
+                                    let awayPlayers = JSON.parse(d.toString()).away.players;
+                                    let allPlayers = homePlayers.concat(awayPlayers);
+                                    let numGamePlayers = allPlayers.length;
+                                    let playerStats;
+                                    
+                                    
+                                    
+                                    /* Find the player we are concerned with and get their stats*/
+                                    for (var i = 0; i < numGamePlayers; i++) {
+
+                                        if (allPlayers[i].full_name.includes(player)) {
+
+                                            playerStats = allPlayers[i].statistics;
+                                            break;
+
+                                        }
+
+                                    }
+
+
+                                   // get news and narrow using name and stats from game 
+                                    request({
+                                     "url": `${GOOGLE_NEWS_API_BASE_URL}everything?apiKey=${GOOGLE_NEWS_API_KEY}&q=`+player.split(' ')[0]+'+'+player.split(' ')[1]+'&sortBy=publishedAt',
+                                     "method": "GET"
+                                    }, (err, res, body) => {
+
+
+                                        let keywords;
+                                        const loadKeywords = snap => {
+                                          if (snap.val()) {
+                                            keywords = snap.val();
+                                          }
+                                        }
+                                        db.ref('/nba/statCats/').on('value', loadKeywords, error => console.log(error));
+
+
+                                        let numKeywords = keywords.length;
+                                        for (var i=0; i < numKeywords; i++) {
+
+                                            if (playerStats[keywords[i]]) {
+                                                keywords.push(playerStats[keywords[i]]);
+                                            }
+
+                                        }
+
+                                        console.log(keywords);
+
+
+                                        let articles = JSON.parse(body).articles;
+                                        let numArticles = articles.length;
+
+                                         if (numArticles > 0) {
+
+
+                                            // Filter the articles
+                                            let toInclude = article => {
+                                                return article.title.includes(player) ? true : 
+                                                            keywords.some(element => article.title.includes(element) || article.description.includes(element)) && article.description.includes(player) ? 
+                                                            true : 
+                                                            false;
+                                            }
+
+                                            let filteredArticles = articles.filter(toInclude);
+                                            let numFilteredArticles = filteredArticles.length;
+
+
+
+                                            if (numFilteredArticles>0) {
+
+
+
+                                                // ******************* TO-DO: MAKE OUTPUT PRETTIER FORMAT ********************* //
+                                                console.log(filteredArticles)
+
+
+                                            } else {
+
+                                                // If the initial filter is too narrow then loosen scope
+                                                let lessNarrowFilter = article => {
+
+                                                    return article.title.includes(player) || article.description.includes(player) || article.content.includes(player)
+                                                }   
+
+                                                let newFilteredArticles = articles.filter(lessNarrowFilter);
+                                                let numNewFilteredArticles = newFilteredArticles.length;
+
+                                                if (numNewFilteredArticles > 0) {
+                                                    // ******************* TO-DO: MAKE OUTPUT PRETTIER FORMAT ********************* //
+                                                    console.log(newFilteredArticles);
+                                                } else {
+                                                    // If less narrow filter still to narrow then just print the stats from most recent game
+
+                                                    // ******************* TO-DO: MAKE OUTPUT PRETTIER FORMAT ********************* //
+                                                    console.log(playerStats);
+                                                }
+
+                                            }
+
+                                            
+                                            
+                                        } else {
+                                            console.log("\n\n"+"Hmm...I'm pretty dumb so I didn't find anything recent on the ".white.bold.bgRed+team.white.bold.bgRed+". Try asking Google!".white.bold.bgRed+"\n\n");
+                                             
+                                        }
+                                    
+                                         if (err){
+                                             console.log("News API Error: ", err);
+                                         }
+                                    });
+
+
+                                });
+
+
+                            });
+
+                            playerStatsReq.on('error', (e) => {
+                                console.error(e)
+                            });
+
+                            playerStatsReq.end();
+
+                    })();
+                });
+
+                
+            });
+                
+                
+            scheduleReq.on('error', (e) => {
+              console.error(e);
+            });
+
+            scheduleReq.end();
+        })();
+
+      });
+    
+
+    });
+                                     
+    seasonsReq.on('error', (e) => {
+      console.error(e);
+    });
+
+    seasonsReq.end();
+
+}
+
+
+
+
 function getNBAScoresOrStandings(team, queryType) {
 
     console.log('nba team to search for: ',team);
@@ -378,8 +651,6 @@ function getNBAScoresOrStandings(team, queryType) {
         res.on('data', (d) => {
             let seasons = JSON.parse(d.toString()).seasons;
             currSeasonType = seasons[seasons.length-1].type.code;
-
-            console.log('it is currently the nba '+currSeasonType+' season in '+currYear)
 
 
             // have to delay program execution so that don't go over 1 Qps limit imposed by SportsRadar API when we make req below
@@ -424,7 +695,7 @@ function getNBAScoresOrStandings(team, queryType) {
                         let away;
                         let homeScore;
                         let awayScore;
-                        console.log(schedule)
+                        // console.log(schedule)
 
 
 
@@ -445,7 +716,7 @@ function getNBAScoresOrStandings(team, queryType) {
 
                           for (var j = nearestUpcoming; j > -1; j--) {
                             if (schedule[j].home.name.includes(team) || schedule[j].away.name.includes(team)) {
-                                console.log(schedule[j])
+                                //console.log(schedule[j])
                                 game = schedule[j]
                                 home = game.home;
                                 away = game.away;
@@ -604,32 +875,10 @@ function getNBAScoresOrStandings(team, queryType) {
                                 console.log('getting nba standings info for the '+team)
 
 
-
                             }
 
 
                          }
-
-
-
-
-
-                          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
                     });
 
@@ -814,7 +1063,6 @@ function getNFLPlayerGameStats(player, team, schedule, week) {
                                         const loadKeywords = snap => {
                                           if (snap.val()) {
                                             keywords = snap.val();
-                                            console.log(keywords)
                                           }
                                         }
                                         db.ref('/nfl/posToStat/'+playerPosition).on('value', loadKeywords, error => console.log(error));
@@ -1731,10 +1979,11 @@ function getTheLatest(data, queryType) {
                     db.ref('/context-stack/0/').set({
                         sport: sport
                     });
-                    // *************************** TO-DO: NBA PLAYER NEWS *************************** //
-                    // *************************** TO-DO: NBA PLAYER NEWS *************************** //
-                    // *************************** TO-DO: NBA PLAYER NEWS *************************** //
-                    console.log('getting nba player news...')
+
+                    getNBAPlayerNews(name, isPlayer(name)[1]);
+
+
+                    
             }
 
             
