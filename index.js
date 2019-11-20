@@ -46,7 +46,8 @@ db.ref().on('value', handleData, error => console.log(error));
 //// Sports Radar API keys ////
 const SPORTS_RADAR_MLB_API_KEY = 'gaqjbcjhzw9u2cbcwxxgpadd';
 const SPORTS_RADAR_NBA_API_KEY = 'cgz6qzb66rvsupc554j23px9';
-const SPORTS_RADAR_NFL_API_KEY = '2mkne3w4rbx39avqk9whkm73';
+// const SPORTS_RADAR_NFL_API_KEY = '2mkne3w4rbx39avqk9whkm73';
+const SPORTS_RADAR_NFL_API_KEY = 'hvm97ysp48ywawpaaxxkme8x';
 const SPORTS_RADAR_NHL_API_KEY = 'm7zfrvkj86j964gv7rn2twkg';
 
 //base url
@@ -133,12 +134,14 @@ process.on('SIGINT', function() {
 // checks what kind of query user has entered and returns string corresponding to query type
 // uses simple regex
 function checkQueryType (q) {
+
     const howDidTheBlankDo = /How\sdid\sthe\s([^\s]+)\sdo\?/;
     const howDidBlankDo = /How\sdid\s([^\s]+)\sdo\?/;
     const howAreTheBlankDoing = /How\sare\sthe\s([^\s]+)\sdoing\?/;
-    const whatAboutBlank = /What\sabout\s([^\s]+)\?/;
+    const whatAboutBlank = /What\sabout\s([^]+)\?/;
 
     let isHowDidTheBlankDo = howDidTheBlankDo.test(q);
+    let isHowDidBlankDo = howDidBlankDo.test(q);
     let isHowAreTheBlankDoing = howAreTheBlankDoing.test(q);
     let isWhatAboutBlank = whatAboutBlank.test(q);
 
@@ -146,7 +149,7 @@ function checkQueryType (q) {
         return 'howDidTheBlankDo';
     } else if (isHowAreTheBlankDoing) {
         return 'howAreTheBlankDoing';
-    } else if (howDidBlankDo) {
+    } else if (isHowDidBlankDo) {
         return 'howDidBlankDo';
     } else if (isWhatAboutBlank) {
         return 'whatAboutBlank';
@@ -157,13 +160,18 @@ function checkQueryType (q) {
 
 // extracts name (of team, player, or city) from string and returns it (string)
 function extractName(s, queryType) {
+
     if (queryType==="howDidTheBlankDo" || queryType==="howAreTheBlankDoing") {
         return s.split('the ')[1].split(' ')[0];;
     } else if (queryType==="howDidBlankDo") {
         return s.split('did ')[1].split(' do')[0];
     }
     else if (queryType==="whatAboutBlank") {
-        return s.split('about ')[1];
+        let term = s.split('about ')[1].replace("?","").indexOf('the ')!=-1? 
+                    s.split('about ')[1].replace("?","").split('the ')[1] :
+                    s.split('about ')[1].replace("?","");
+
+        return term.replace(/(\r\n|\n|\r)/gm, "");
     }
 
 }
@@ -278,6 +286,7 @@ function whichSport(team) {
 
 // check if name is a city
 function isCity(s) {
+
     let allCities = [];
     let allTeams = allData.nfl.teams.concat(allData.nba.teams);
     let numTeams = allTeams.length;
@@ -287,7 +296,6 @@ function isCity(s) {
         allCities.push(allTeams[i].city);
 
     }
-    console.log(allCities)
 
     if (allCities.includes(s)) {
         return true;
@@ -1729,14 +1737,13 @@ function sortByProperty (property) {
 // gets latest news for a team or player and returns json object containing said news info
 function getTheLatest(data, queryType) {
 
-    // get name of team or player from the data user enters
+    // get name of team or player or city from the data user enters
     let name = extractName(data, queryType);
     let context;
 
     //check context stack
     const loadContext = snap => {
       if (snap.val()) {
-        console.log(snap.val())
         context = snap.val();
       }
     }
@@ -1759,15 +1766,17 @@ function getTheLatest(data, queryType) {
 
                 // push sport to context-stack
                 db.ref('/context-stack/0/').set({
-                    sport: sport
+                    sport: sport,
+                    queryType: queryType
                 });
 
                 // want previous week's score or current score
                 getNFLScoresOrStandings(name, queryType);
             } else {
                 db.ref('/context-stack/0/').set({
-                            sport: sport
-                        });
+                    sport: sport,
+                    queryType: queryType
+                });
                 
                 getNBAScoresOrStandings(name,queryType)
                 console.log('context===none, getting nba scores/standings for ',name ,queryType)
@@ -1782,31 +1791,40 @@ function getTheLatest(data, queryType) {
 
                     // push sport to context-stack
                     db.ref('/context-stack/0/').set({
-                        sport: sport
+                        sport: sport,
+                        queryType: queryType
                     });
 
                     // want previous week's score or current score
                     getNFLScoresOrStandings(name, queryType);
                 } else {
                     db.ref('/context-stack/0/').set({
-                            sport: sport
-                        });
+                        sport: sport,
+                        queryType: queryType
+                    });
                    
                     getNBAScoresOrStandings(name,queryType)
-                    console.log('context!=sport, getting nba scores/standings for ',name,queryType)
+                    console.log('context!=knowledgeBase, getting nba scores/standings for ',name,queryType)
                 }
 
             } else {
 
                 if (sport==="nfl") {
+                    db.ref('/context-stack/0/').set({
+                        sport: sport,
+                        queryType: queryType
+                    });
 
                     // want previous week's score or current score
                     getNFLScoresOrStandings(name, queryType);
                 } else {
                     
-                    
+                    db.ref('/context-stack/0/').set({
+                        sport: sport,
+                        queryType: queryType
+                    });
                     getNBAScoresOrStandings(name,queryType)
-                    console.log('context===sport, getting nba scores/standings for ',name,queryType)
+                    console.log('context===knowledgeBase, getting nba scores/standings for ',name,queryType)
                 }
 
             }
@@ -1829,15 +1847,17 @@ function getTheLatest(data, queryType) {
 
                 // push sport to context-stack
                 db.ref('/context-stack/0/').set({
-                    sport: sport
+                    sport: sport,
+                    queryType: queryType
                 });
 
                 // want previous week's score or current score
                 getNFLScoresOrStandings(name, queryType);
             } else {
                 db.ref('/context-stack/0/').set({
-                        sport: sport
-                    });
+                    sport: sport,
+                    queryType: queryType
+                });
                 
                 getNBAScoresOrStandings(name,queryType)
                 console.log('context===none, getting nba scores/standings for ',name,queryType)
@@ -1852,18 +1872,20 @@ function getTheLatest(data, queryType) {
 
                     // push sport to context-stack
                     db.ref('/context-stack/0/').set({
-                        sport: sport
+                        sport: sport,
+                        queryType: queryType
                     });
 
                     // want previous week's score or current score
                     getNFLScoresOrStandings(name, queryType);
                 } else {
                     db.ref('/context-stack/0/').set({
-                            sport: sport
-                        });
+                        sport: sport,
+                        queryType: queryType
+                    });
                     
                     getNBAScoresOrStandings(name,queryType)
-                    console.log('context!=sport, getting nba scores/standings for ',name,queryType)
+                    console.log('context!=knowledgeBase, getting nba scores/standings for ',name,queryType)
                 }
 
             } else { // if context-stack and knowledge base agree, then continue
@@ -1872,11 +1894,17 @@ function getTheLatest(data, queryType) {
 
                     // push sport to context-stack
                     db.ref('/context-stack/0/').set({
-                        sport: sport
+                        sport: sport,
+                        queryType: queryType
                     });
                     // want previous week's score or current score
                     getNFLScoresOrStandings(name, queryType);
                 } else {
+
+                    db.ref('/context-stack/0/').set({
+                        sport: sport,
+                        queryType: queryType
+                    });
                     
                     getNBAScoresOrStandings(name,queryType)
                     console.log('context==sport, getting nba scores/standings for ',name,queryType)
@@ -1906,14 +1934,16 @@ function getTheLatest(data, queryType) {
 
                     // push sport to context-stack
                     db.ref('/context-stack/0/').set({
-                        sport: sport
+                        sport: sport,
+                        queryType: queryType
                     });
 
                     // want previous week's score or current score
                     getNFLScoresOrStandings(name, queryType);
                 } else {
                         db.ref('/context-stack/0/').set({
-                            sport: sport
+                            sport: sport,
+                            queryType: queryType
                         });
 
                         getNBAScoresOrStandings(name,queryType)
@@ -1929,30 +1959,38 @@ function getTheLatest(data, queryType) {
 
                         // push sport to context-stack
                         db.ref('/context-stack/0/').set({
-                            sport: sport
+                            sport: sport,
+                            queryType: queryType
                         });
 
                         // want previous week's score or current score
                         getNFLScoresOrStandings(name, queryType);
                     } else {
                         db.ref('/context-stack/0/').set({
-                            sport: sport
+                            sport: sport,
+                            queryType: queryType
                         });
                         
                         getNBAScoresOrStandings(name,queryType)
-                        console.log('context!=sport, getting nba scores/standings for ',name,queryType)
+                        console.log('context!=knowledgeBase, getting nba scores/standings for ',name,queryType)
                     }
 
                 } else { // if context-stack and knowledge base agree, then continue
 
                     if (sport==="nfl") {
-
+                        db.ref('/context-stack/0/').set({
+                            sport: sport,
+                            queryType: queryType
+                        });
                         // want previous week's score or current score
                         getNFLScoresOrStandings(name, queryType);
                     } else {
-
+                        db.ref('/context-stack/0/').set({
+                            sport: sport,
+                            queryType: queryType
+                        });
                         getNBAScoresOrStandings(name,queryType)
-                        console.log('context===sport, getting nba scores/standings for ',name,queryType)
+                        console.log('context===knowledgeBase, getting nba scores/standings for ',name,queryType)
                     }
 
 
@@ -1970,14 +2008,16 @@ function getTheLatest(data, queryType) {
 
                 // push sport to context-stack
                 db.ref('/context-stack/0/').set({
-                    sport: sport
+                    sport: sport,
+                    queryType: queryType
                 });
 
                 // if it's a player we want an article on how the player did
                 getNFLPlayerNews(name, isPlayer(name)[1])
             } else {
                     db.ref('/context-stack/0/').set({
-                        sport: sport
+                        sport: sport,
+                        queryType: queryType
                     });
 
                     getNBAPlayerNews(name, isPlayer(name)[1]);
@@ -2014,31 +2054,39 @@ function getTheLatest(data, queryType) {
 
                         // push sport to context-stack
                         db.ref('/context-stack/0/').set({
-                            sport: sport
+                            sport: sport,
+                            queryType: queryType
                         });
 
                         // want previous week's score or current score
                         getNFLScoresOrStandings(name, queryType);
                     } else {
                         db.ref('/context-stack/0/').set({
-                            sport: sport
+                            sport: sport,
+                            queryType: queryType
                         });
 
                         getNBAScoresOrStandings(name,queryType)
-                        console.log('context!=sport, getting nba scores/standings for ',team,queryType)
+                        console.log('context!=knowledgeBase, getting nba scores/standings for ',team,queryType)
                     }
 
                 } else { // if context-stack and knowledge base agree, then continue
 
                     if (sport==="nfl") {
-
+                        db.ref('/context-stack/0/').set({
+                            sport: sport,
+                            queryType: queryType
+                        });
                         // want previous week's score or current score
                         getNFLScoresOrStandings(name, queryType);
                     } else {
                         
-
+                        db.ref('/context-stack/0/').set({
+                            sport: sport,
+                            queryType: queryType
+                        });
                         getNBAScoresOrStandings(name,queryType)
-                        console.log('context===sport, getting nba scores/standings for ',team, queryType)
+                        console.log('context===knowledgeBase, getting nba scores/standings for ',team, queryType)
                     }
 
                 }
@@ -2058,8 +2106,209 @@ function getTheLatest(data, queryType) {
 
         // if it is NOT then pop the object at the top and examine 
         // 1. what sport is it
-        // 2. find team/player in that sport
-        // 3. get news about that team/player
+        // 2. what was most recent queryType ******** BASED ON THAT WE WANT TO CALL FUNCTIONS W CERTAIN OTHER QUERY TYPES
+        // 3. get news about that team/player/city
+        console.log('name, queryType'+name+queryType)
+
+
+        let prevQueryType;
+
+        const loadPrevQueryType = snap => {
+            if (snap.val()) {
+                prevQueryType = snap.val()
+                console.log('prevQueryType: ',prevQueryType)
+            }
+        }
+
+        db.ref('/context-stack/0/queryType/').on('value', loadPrevQueryType, (e) => console.log(e));
+
+
+
+
+
+        // need to check if the relevant name in the query is a team, player, or city
+        if (isTeam(name)) {
+
+            // get sport you think it is based on knowledge base
+            let sport = whichSport(name)
+            console.log('queryType, sport: ',queryType,sport)
+
+
+            // if context-stack empty
+            if (context==="none") {
+
+
+                if (sport==="nfl") {
+
+                    // push sport to context-stack
+                    db.ref('/context-stack/0/').set({
+                        sport: sport,
+                        queryType: prevQueryType
+                    });
+
+                    // want previous week's score or current score
+                    getNFLScoresOrStandings(name, prevQueryType);
+                } else {
+                        db.ref('/context-stack/0/').set({
+                            sport: sport,
+                            queryType: prevQueryType
+                        });
+
+                        getNBAScoresOrStandings(name,prevQueryType)
+                        console.log('context===none, getting nba scores/standings for ',name,queryType)
+                }
+
+            } else {
+
+                // if context-stack isn't the same as your knowledge base, prefer knowledge base
+                if (context!=sport) {
+
+                    if (sport==="nfl") {
+
+                        // push sport to context-stack
+                        db.ref('/context-stack/0/').set({
+                            sport: sport,
+                            queryType: prevQueryType
+                        });
+
+                        // want previous week's score or current score
+                        getNFLScoresOrStandings(name, prevQueryType);
+                    } else {
+                        db.ref('/context-stack/0/').set({
+                            sport: sport,
+                            queryType: prevQueryType
+                        });
+                        
+                        getNBAScoresOrStandings(name,prevQueryType)
+                        console.log('context!=knowledgeBase, getting nba scores/standings for ',name,queryType)
+                    }
+
+                } else { // if context-stack and knowledge base agree, then continue
+
+                    if (sport==="nfl") {
+                        db.ref('/context-stack/0/').set({
+                            sport: sport,
+                            queryType: prevQueryType
+                        });
+                        // want previous week's score or current score
+                        getNFLScoresOrStandings(name, prevQueryType);
+                    } else {
+                        db.ref('/context-stack/0/').set({
+                            sport: sport,
+                            queryType: prevQueryType
+                        });
+                        getNBAScoresOrStandings(name,prevQueryType)
+                        console.log('context===knowledgeBase, getting nba scores/standings for ',name,queryType)
+                    }
+
+
+                }
+
+            } 
+
+
+        } else if (isPlayer(name)[0]) {
+
+            let sport = isPlayer(name)[2];
+            console.log('queryType, sport: ',queryType,sport)
+            if (sport==="nfl") {
+                console.log('nfl player!')
+
+                // push sport to context-stack
+                db.ref('/context-stack/0/').set({
+                    sport: sport,
+                    queryType: 'howDidBlankDo'
+                });
+
+                // if it's a player we want an article on how the player did
+                getNFLPlayerNews(name, isPlayer(name)[1])
+            } else {
+                    db.ref('/context-stack/0/').set({
+                        sport: sport,
+                        queryType:'howDidBlankDo'
+                    });
+
+                    getNBAPlayerNews(name, isPlayer(name)[1]);
+
+
+                    
+            }
+
+            
+
+        } else if (isCity(name)) {
+
+            /* if it's a city then: 
+             1. check context stack for the sport
+             2. check which sport is on (optional)
+             3. get scores/standings news from the team from that city with that sport*/
+             console.log('city!')
+             // if context-stack empty, ask which league
+            if (context==="none") {
+                console.log('Is this team in the NFL or NBA?')
+                db.ref('/context-stack/0/').update({
+                    city: name
+                });
+            } else {
+
+                let team = teamFromCity(context, name)
+                let sport = whichSport(team)
+
+                // if context-stack isn't the same as your knowledge base, prefer knowledge base
+                if (context!=sport) {
+
+                    if (sport==="nfl") {
+
+                        // push sport to context-stack
+                        db.ref('/context-stack/0/').set({
+                            sport: sport,
+                            queryType: prevQueryType
+                        });
+
+                        // want previous week's score or current score
+                        getNFLScoresOrStandings(team, prevQueryType);
+                    } else {
+                        db.ref('/context-stack/0/').set({
+                            sport: sport,
+                            queryType: prevQueryType
+                        });
+
+                        getNBAScoresOrStandings(team,prevQueryType)
+                        console.log('context!=knowledgeBase, getting nba scores/standings for ',team,queryType)
+                    }
+
+                } else { // if context-stack and knowledge base agree, then continue
+
+                    if (sport==="nfl") {
+                        db.ref('/context-stack/0/').set({
+                            sport: sport,
+                            queryType: prevQueryType
+                        });
+                        // want previous week's score or current score
+                        getNFLScoresOrStandings(team, prevQueryType);
+                    } else {
+                        
+                        db.ref('/context-stack/0/').set({
+                            sport: sport,
+                            queryType: prevQueryType
+                        });
+                        getNBAScoresOrStandings(team,prevQueryType)
+                        console.log('context===knowledgeBase, getting nba scores/standings for ',team, queryType)
+                    }
+
+                }
+
+
+            }
+            
+
+        }
+        
+
+
+
+
+
 
 
     }
