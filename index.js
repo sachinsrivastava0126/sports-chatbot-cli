@@ -136,7 +136,7 @@ process.on('SIGINT', function() {
 function checkQueryType (q) {
 
     const howDidTheBlankDo = /How\sdid\sthe\s([^\s]+)\sdo\?/;
-    const howDidBlankDo = /How\sdid\s([^\s]+)\sdo\?/;
+    const howDidBlankDo = /How\sdid\s([^]+)\sdo\?/;
     const howAreTheBlankDoing = /How\sare\sthe\s([^\s]+)\sdoing\?/;
     const whatAboutBlank = /What\sabout\s([^]+)\?/;
 
@@ -660,153 +660,102 @@ function getNBAScoresOrStandings(team, queryType) {
             let seasons = JSON.parse(d.toString()).seasons;
             currSeasonType = seasons[seasons.length-1].type.code;
 
+            if (queryType==='howDidTheBlankDo' || queryType==='howDidBlankDo') {
+                // have to delay program execution so that don't go over 1 Qps limit imposed by SportsRadar API when we make req below
+                var wait = ms => new Promise((r, j)=>setTimeout(r, ms));
+                (async () => { 
 
-            // have to delay program execution so that don't go over 1 Qps limit imposed by SportsRadar API when we make req below
-            var wait = ms => new Promise((r, j)=>setTimeout(r, ms));
-            (async () => { 
+                    await wait(1000);   
 
-                await wait(1000);   
+                    
+                    // given the year and season type we can get the schedule for that season (ultimately to get the current week)
+                    let schedule;
+                    const scheduleOptions = {
+                        hostname: SPORTS_RADAR_API_BASE_URL,
+                        path: '/nba/trial/v7/en/games/'+currYear+'/'+currSeasonType+'/schedule.json?api_key='+SPORTS_RADAR_NBA_API_KEY,
+                        method: 'GET'
+                    }
 
-                
-                // given the year and season type we can get the schedule for that season (ultimately to get the current week)
-                let schedule;
-                const scheduleOptions = {
-                    hostname: SPORTS_RADAR_API_BASE_URL,
-                    path: '/nba/trial/v7/en/games/'+currYear+'/'+currSeasonType+'/schedule.json?api_key='+SPORTS_RADAR_NBA_API_KEY,
-                    method: 'GET'
-                }
+                    const scheduleReq = https.request(scheduleOptions, (res) => {
+                        // console.log(options);
+                        console.log('nba schedule statusCode: ', res.statusCode);
+                        // console.log('schedule headers: ', res.headers);
 
-                const scheduleReq = https.request(scheduleOptions, (res) => {
-                    // console.log(options);
-                    console.log('nba schedule statusCode: ', res.statusCode);
-                    // console.log('schedule headers: ', res.headers);
+                        // create array for all data
+                        let chunks = [];
 
-                    // create array for all data
-                    let chunks = [];
-
-                    res.on('data', function (d) {
-                        
-                        // append to that array
-                        chunks.push(d);
-
-
-
-                    }).on('end', function () {
-
-                        //create buffer from the bytes in the chunks array ONLY AFTER all of it has been received then cast to string and parse JSON object
-                        let d = Buffer.concat(chunks);
-                        let schedule = JSON.parse(d.toString()).games;
-                        let numGames = schedule.length;
-                        let nearestUpcoming;
-                        let game;
-                        let home;
-                        let away;
-                        let homeScore;
-                        let awayScore;
-                        // console.log(schedule)
+                        res.on('data', function (d) {
+                            
+                            // append to that array
+                            chunks.push(d);
 
 
 
+                        }).on('end', function () {
 
-                       /* 1. Iterate through the games for that season's schedule
-                          2. Find the first game that is "scheduled" and get that index
-                          3. Iterate backwards through the games until you find a game that has that team
-                          4. Get news on that team using that game's info 
-                          5. Break */ 
-                          for (var i = 0; i < numGames; i++) {
-                            if (schedule[i].status==="scheduled") {
-                                nearestUpcoming = i;
-                                break;
-                            }
-
-                          }
-
-
-                          for (var j = nearestUpcoming; j > -1; j--) {
-                            if (schedule[j].home.name.includes(team) || schedule[j].away.name.includes(team)) {
-                                //console.log(schedule[j])
-                                game = schedule[j]
-                                home = game.home;
-                                away = game.away;
-                                break;
-
-                            }
-
-                          }
+                            //create buffer from the bytes in the chunks array ONLY AFTER all of it has been received then cast to string and parse JSON object
+                            let d = Buffer.concat(chunks);
+                            let schedule = JSON.parse(d.toString()).games;
+                            let numGames = schedule.length;
+                            let nearestUpcoming;
+                            let game;
+                            let home;
+                            let away;
+                            let homeScore;
+                            let awayScore;
+                            // console.log(schedule)
 
 
-                          let gameID = game.id;
-                          let status = game.status;
 
-                          // have to delay program execution so that don't go over 1 Qps limit imposed by SportsRadar API when we make req below
-                        
-                          /* If the game is going on then get the current score and console.log it */
-                          if (status==='inprogress' || status==='halftime') {
 
-                            // have to delay program execution so that don't go over 1 Qps limit imposed by SportsRadar API when we make req below
-                            var wait = ms => new Promise((r, j)=>setTimeout(r, ms));
-                            (async () => { 
-
-                                await wait(1000);
-                                const liveScoreOptions =  {
-                                    hostname: SPORTS_RADAR_API_BASE_URL,
-                                    path: '/nba/trial/v7/en/games/'+gameID+'/boxscore.json?api_key='+SPORTS_RADAR_NBA_API_KEY,
-                                    method: 'GET'
+                           /* 1. Iterate through the games for that season's schedule
+                              2. Find the first game that is "scheduled" and get that index
+                              3. Iterate backwards through the games until you find a game that has that team
+                              4. Get news on that team using that game's info 
+                              5. Break */ 
+                              for (var i = 0; i < numGames; i++) {
+                                if (schedule[i].status==="scheduled") {
+                                    nearestUpcoming = i;
+                                    break;
                                 }
 
-                                const liveScoreReq = https.request(liveScoreOptions, (res) => {
-                                    console.log('nba livescore statusCode: ', res.statusCode);
-                                    let chunks = [];
-
-                                     res.on('data', function (d) {
-                                                            
-                                        // append to that array
-                                        chunks.push(d);
-
-                                    }).on('end', function () {
-                                        let d = Buffer.concat(chunks);
-                                        let gameData = JSON.parse(d.toString())
-
-                                        
-
-                                        homeScore = gameData.home.points;
-                                        awayScore = gameData.away.points;
-
-                                        // Log the current score in the game
-                                        console.log('The current score is: '+gameData.home.name+': '+gameData.home.points+' '+gameData.away.name+': '+gameData.away.points);
+                              }
 
 
+                              for (var j = nearestUpcoming; j > -1; j--) {
+                                if (schedule[j].home.name.includes(team) || schedule[j].away.name.includes(team)) {
+                                    //console.log(schedule[j])
+                                    game = schedule[j]
+                                    home = game.home;
+                                    away = game.away;
+                                    break;
 
-                                    });
+                                }
 
-                               });
-
-                                liveScoreReq.on('error', (e) => {
-                                    console.log(e);
-                                });
-
-                                liveScoreReq.end();
-
-                            })();
-
-                         } else {
+                              }
 
 
-                            if (queryType==="howDidTheBlankDo" || queryType==="howDidBlankDo") {
+                              let gameID = game.id;
+                              let status = game.status;
+
+                              // have to delay program execution so that don't go over 1 Qps limit imposed by SportsRadar API when we make req below
+                            
+                              /* If the game is going on then get the current score and console.log it */
+                              if (status==='inprogress' || status==='halftime') {
+
                                 // have to delay program execution so that don't go over 1 Qps limit imposed by SportsRadar API when we make req below
                                 var wait = ms => new Promise((r, j)=>setTimeout(r, ms));
-                                (async () => {
-                                    await wait(1000);
+                                (async () => { 
 
-                                    const previousScoreOptions = {
+                                    await wait(1000);
+                                    const liveScoreOptions =  {
                                         hostname: SPORTS_RADAR_API_BASE_URL,
                                         path: '/nba/trial/v7/en/games/'+gameID+'/boxscore.json?api_key='+SPORTS_RADAR_NBA_API_KEY,
                                         method: 'GET'
                                     }
 
-                                    const previousScoreReq = https.request(previousScoreOptions, (res) => {
-                                        console.log('nba recent score statusCode: ', res.statusCode);
-
+                                    const liveScoreReq = https.request(liveScoreOptions, (res) => {
+                                        console.log('nba livescore statusCode: ', res.statusCode);
                                         let chunks = [];
 
                                          res.on('data', function (d) {
@@ -823,85 +772,227 @@ function getNBAScoresOrStandings(team, queryType) {
                                             homeScore = gameData.home.points;
                                             awayScore = gameData.away.points;
 
-                                            let higherScore = homeScore > awayScore? homeScore: awayScore;
-                                            let lowerScore = homeScore < awayScore? homeScore: awayScore;
-                                            let newsQueryString = home.name.split(' ')[home.name.split(' ').length-1]+'+'+away.name.split(' ')[away.name.split(' ').length-1]+'+'+higherScore+'-'+lowerScore;
+                                            // Log the current score in the game
+                                            console.log('The current score is: '+gameData.home.name+': '+gameData.home.points+' '+gameData.away.name+': '+gameData.away.points);
 
-                                            
-
-
-                                            request({
-                                                     "url": `${GOOGLE_NEWS_API_BASE_URL}everything?apiKey=${GOOGLE_NEWS_API_KEY}&q=`+newsQueryString,
-                                                     "method": "GET"
-                                                 }, (err, res, body) => {
-
-                                                    let articles = JSON.parse(body).articles;
-                                                    let numArticles = articles.length;
-
-                                                     if (numArticles > 0) {
-
-                                                        for (var i =0; i < numArticles; i++) {
-
-                                                            if (articles[i].title && articles[i].description && articles[i].content && (articles[i].title.includes(higherScore+"-"+lowerScore) || articles[i].description.includes(higherScore+"-"+lowerScore) ||
-                                                                articles[i].content.includes(higherScore+"-"+lowerScore))) {
-                                                                
-
-                                                                // ***************** TO DO: FORMAT THIS NICELY SO PRINTS PRETTY IN CONSOLE ***************** //
-                                                                console.log(articles[i]);
-                                                            }
-
-                                                        }
-       
-                                                        
-                                                    } else {
-                                                        console.log("\n\n"+"Hmm...I'm pretty dumb so I didn't find anything recent on the ".white.bold.bgRed+team.white.bold.bgRed+". Try asking Google!".white.bold.bgRed+"\n\n");
-                                                    }
-                                                
-                                                     if (err){
-                                                         console.log("News API Error: ", err);
-                                                     }
-                                            });
 
 
                                         });
 
+                                   });
 
-                                    });
-
-                                    previousScoreReq.on('error', (e) => {
+                                    liveScoreReq.on('error', (e) => {
                                         console.log(e);
                                     });
 
-                                    previousScoreReq.end();
-
+                                    liveScoreReq.end();
 
                                 })();
 
-                            } else if (queryType==="howAreTheBlankDoing") {
-
-                                /* Get Standings Information*/
-                                console.log('getting nba standings info for the '+team)
+                             } 
+                             // else {
 
 
-                            }
+                             //    // if (queryType==="howDidTheBlankDo" || queryType==="howDidBlankDo") {
+                             //    //     // have to delay program execution so that don't go over 1 Qps limit imposed by SportsRadar API when we make req below
+                             //    //     var wait = ms => new Promise((r, j)=>setTimeout(r, ms));
+                             //    //     (async () => {
+                             //    //         await wait(1000);
+
+                             //    //         const previousScoreOptions = {
+                             //    //             hostname: SPORTS_RADAR_API_BASE_URL,
+                             //    //             path: '/nba/trial/v7/en/games/'+gameID+'/boxscore.json?api_key='+SPORTS_RADAR_NBA_API_KEY,
+                             //    //             method: 'GET'
+                             //    //         }
+
+                             //    //         const previousScoreReq = https.request(previousScoreOptions, (res) => {
+                             //    //             console.log('nba recent score statusCode: ', res.statusCode);
+
+                             //    //             let chunks = [];
+
+                             //    //              res.on('data', function (d) {
+                                                                    
+                             //    //                 // append to that array
+                             //    //                 chunks.push(d);
+
+                             //    //             }).on('end', function () {
+                             //    //                 let d = Buffer.concat(chunks);
+                             //    //                 let gameData = JSON.parse(d.toString())
+
+                                                
+
+                             //    //                 homeScore = gameData.home.points;
+                             //    //                 awayScore = gameData.away.points;
+
+                             //    //                 let higherScore = homeScore > awayScore? homeScore: awayScore;
+                             //    //                 let lowerScore = homeScore < awayScore? homeScore: awayScore;
+                             //    //                 let newsQueryString = home.name.split(' ')[home.name.split(' ').length-1]+'+'+away.name.split(' ')[away.name.split(' ').length-1]+'+'+higherScore+'-'+lowerScore;
+
+                                                
 
 
-                         }
+                             //    //                 request({
+                             //    //                          "url": `${GOOGLE_NEWS_API_BASE_URL}everything?apiKey=${GOOGLE_NEWS_API_KEY}&q=`+newsQueryString,
+                             //    //                          "method": "GET"
+                             //    //                      }, (err, res, body) => {
+
+                             //    //                         let articles = JSON.parse(body).articles;
+                             //    //                         let numArticles = articles.length;
+
+                             //    //                          if (numArticles > 0) {
+
+                             //    //                             for (var i =0; i < numArticles; i++) {
+
+                             //    //                                 if (articles[i].title && articles[i].description && articles[i].content && (articles[i].title.includes(higherScore+"-"+lowerScore) || articles[i].description.includes(higherScore+"-"+lowerScore) ||
+                             //    //                                     articles[i].content.includes(higherScore+"-"+lowerScore))) {
+                                                                    
+
+                             //    //                                     // ***************** TO DO: FORMAT THIS NICELY SO PRINTS PRETTY IN CONSOLE ***************** //
+                             //    //                                     console.log(articles[i]);
+                             //    //                                 }
+
+                             //    //                             }
+           
+                                                            
+                             //    //                         } else {
+                             //    //                             console.log("\n\n"+"Hmm...I'm pretty dumb so I didn't find anything recent on the ".white.bold.bgRed+team.white.bold.bgRed+". Try asking Google!".white.bold.bgRed+"\n\n");
+                             //    //                         }
+                                                    
+                             //    //                          if (err){
+                             //    //                              console.log("News API Error: ", err);
+                             //    //                          }
+                             //    //                 });
+
+
+                             //    //             });
+
+
+                             //    //         });
+
+                             //    //         previousScoreReq.on('error', (e) => {
+                             //    //             console.log(e);
+                             //    //         });
+
+                             //    //         previousScoreReq.end();
+
+
+                             //    //     })();
+
+                             //    // } else if (queryType==="howAreTheBlankDoing") {
+
+                             //    //     /* Get Standings Information*/
+                             //    //     console.log('getting nba standings info for the '+team)
+
+
+                             //    // }
+
+
+                             // }
+
+                        });
+
 
                     });
 
+                    scheduleReq.on('error', (e) => {
+                      console.error(e);
+                    });
 
-                });
+                    scheduleReq.end();
 
-                scheduleReq.on('error', (e) => {
-                  console.error(e);
-                });
+                })();  
 
-                scheduleReq.end();
+            } else if (queryType==='howAreTheBlankDoing') {
 
-            })();  
+                // get nba standings for given team
+                const standingsOptions = {
+                    hostname: SPORTS_RADAR_API_BASE_URL,
+                    path: '/nba/trial/v7/en/seasons/'+currYear+'/'+currSeasonType+'/standings.json?api_key='+SPORTS_RADAR_NBA_API_KEY,
+                    method: 'GET'
+                }
+
+                    var wait = ms => new Promise((r, j)=>setTimeout(r, ms));
+                    (async () => { 
+
+                        await wait(1000);
+                        const standingsReq = https.request(standingsOptions, (res) => {
+                            // console.log(options);
+                            console.log('nba standings statusCode: ', res.statusCode);
+                            // console.log('seasons headers: ', res.headers);
+
+                            let chunks = [];
+
+                             res.on('data', function (d) {
+                                                    
+                                // append to that array
+                                chunks.push(d);
+
+                            }).on('end', function () {
+
+                                let d = Buffer.concat(chunks);
+                                let standingsData = JSON.parse(d.toString());
+
+                                let east = standingsData.conferences[0];
+                                let west = standingsData.conferences[1];
 
 
+                                let numDivisions = east.divisions.length;
+                                let numDivisionTeams = east.divisions[0].teams.length;
+
+                                for(let i = 0; i<numDivisions; i++) {
+
+                                    for (let j = 0; j < numDivisionTeams; j++) {
+
+                                        // check both conferences and each division within that conference for the team to get their standings
+                                        if (east.divisions[i].teams[j].name.includes(team)) {
+                                            let streakType = east.divisions[i].teams[j].streak.type==="loss"? "losing" : "winning";
+                                            let streakLength = east.divisions[i].teams[j].streak.length;
+
+                                            let wins = east.divisions[i].teams[j].wins;
+                                            let losses = east.divisions[i].teams[j].losses;
+
+
+
+                                            console.log("The "+team+" are on a "+streakLength+"-game "+streakType+" streak and stand at "+wins+"-"+losses+" on the season.");
+
+                                        } else if (west.divisions[i].teams[j].name.includes(team)) {
+                                                let streakType = west.divisions[i].teams[j].streak.type==="loss"? "losing" : "winning";
+                                                let streakLength = west.divisions[i].teams[j].streak.length;
+
+                                                let wins = west.divisions[i].teams[j].wins;
+                                                let losses = west.divisions[i].teams[j].losses;
+
+
+
+
+                                                console.log("The "+team+" are on a "+streakLength+"-game "+streakType+" streak and stand at "+wins+"-"+losses+" on the season.");
+
+                                        }
+
+                                    }
+
+                                }
+
+
+                            });
+
+
+
+
+
+
+                        });
+
+                        standingsReq.on('error', (e) => {
+                            console.error(e)
+                        });
+
+                        standingsReq.end();
+
+                    })();
+
+            }
+            
         });
 
 
@@ -1560,11 +1651,11 @@ function getNFLStandings(team, currYear) {
                             console.log("The "+team+" are on a "+streakLength+"-game "+streakType+" streak and stand at "+wins+"-"+losses+" on the season.");
 
                         } else if (nfc.divisions[i].teams[j].name.includes(team)) {
-                                let streakType = afc.divisions[i].teams[j].streak.type==="loss"? "losing" : "winning";
-                                let streakLength = afc.divisions[i].teams[j].streak.length;
+                                let streakType = nfc.divisions[i].teams[j].streak.type==="loss"? "losing" : "winning";
+                                let streakLength = nfc.divisions[i].teams[j].streak.length;
 
-                                let wins = afc.divisions[i].teams[j].wins;
-                                let losses = afc.divisions[i].teams[j].losses;
+                                let wins = nfc.divisions[i].teams[j].wins;
+                                let losses = nfc.divisions[i].teams[j].losses;
 
 
 
