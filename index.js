@@ -637,6 +637,7 @@ function getNBAPlayerNews(player, team) {
 function getNBAScoresOrStandings(team, queryType) {
 
     console.log('nba team to search for: ',team);
+    console.log('this is the queryType: ', queryType)
 
 
 
@@ -788,6 +789,104 @@ function getNBAScoresOrStandings(team, queryType) {
                                     liveScoreReq.end();
 
                                 })();
+
+                             }
+                             else {  
+
+
+                                if (queryType==="howDidTheBlankDo" || queryType==="howDidBlankDo") {  
+                                    // have to delay program execution so that don't go over 1 Qps limit imposed by SportsRadar API when we make req below    
+                                    var wait = ms => new Promise((r, j)=>setTimeout(r, ms));  
+                                    (async () => {    
+                                        await wait(1000); 
+
+                                        const previousScoreOptions = {    
+                                            hostname: SPORTS_RADAR_API_BASE_URL,  
+                                            path: '/nba/trial/v7/en/games/'+gameID+'/boxscore.json?api_key='+SPORTS_RADAR_NBA_API_KEY,    
+                                            method: 'GET' 
+                                        } 
+
+                                        const previousScoreReq = https.request(previousScoreOptions, (res) => {   
+                                            console.log('nba recent score statusCode: ', res.statusCode); 
+
+                                            let chunks = [];  
+
+                                             res.on('data', function (d) {    
+
+                                                // append to that array   
+                                                chunks.push(d);   
+
+                                            }).on('end', function () {    
+                                                let d = Buffer.concat(chunks);    
+                                                let gameData = JSON.parse(d.toString())   
+
+
+
+                                                homeScore = gameData.home.points; 
+                                                awayScore = gameData.away.points; 
+
+                                                let higherScore = homeScore > awayScore? homeScore: awayScore;    
+                                                let lowerScore = homeScore < awayScore? homeScore: awayScore; 
+                                                let newsQueryString = home.name.split(' ')[home.name.split(' ').length-1]+'+'+away.name.split(' ')[away.name.split(' ').length-1]+'+'+higherScore+'-'+lowerScore; 
+
+
+
+
+                                                request({ 
+                                                         "url": `${GOOGLE_NEWS_API_BASE_URL}everything?apiKey=${GOOGLE_NEWS_API_KEY}&q=`+newsQueryString, 
+                                                         "method": "GET"  
+                                                     }, (err, res, body) => { 
+
+                                                        let articles = JSON.parse(body).articles; 
+                                                        let numArticles = articles.length;    
+
+                                                         if (numArticles > 0) {   
+
+                                                            for (var i =0; i < numArticles; i++) {    
+
+                                                                if (articles[i].title && articles[i].description && articles[i].content && (articles[i].title.includes(higherScore+"-"+lowerScore) || articles[i].description.includes(higherScore+"-"+lowerScore) || 
+                                                                    articles[i].content.includes(higherScore+"-"+lowerScore))) {  
+
+
+                                                                    // ***************** TO DO: FORMAT THIS NICELY SO PRINTS PRETTY IN CONSOLE ***************** //   
+                                                                    console.log(articles[i]); 
+                                                                } 
+
+                                                            } 
+
+
+                                                        } else {  
+                                                            console.log("\n\n"+"Hmm...I'm pretty dumb so I didn't find anything recent on the ".white.bold.bgRed+team.white.bold.bgRed+". Try asking Google!".white.bold.bgRed+"\n\n");   
+                                                        } 
+
+                                                         if (err){    
+                                                             console.log("News API Error: ", err);    
+                                                         }    
+                                                });   
+
+
+                                            });   
+
+
+                                        });   
+
+                                        previousScoreReq.on('error', (e) => { 
+                                            console.log(e);   
+                                        });   
+
+                                        previousScoreReq.end();   
+
+
+                                    })(); 
+
+                                } else if (queryType==="howAreTheBlankDoing") {   
+
+                                    /* Get Standings Information*/    
+                                    console.log('getting nba standings info for the '+team)   
+
+
+                                } 
+
 
                              }
 
