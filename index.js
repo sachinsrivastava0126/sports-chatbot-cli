@@ -789,105 +789,7 @@ function getNBAScoresOrStandings(team, queryType) {
 
                                 })();
 
-                             } 
-                             // else {
-
-
-                             //    // if (queryType==="howDidTheBlankDo" || queryType==="howDidBlankDo") {
-                             //    //     // have to delay program execution so that don't go over 1 Qps limit imposed by SportsRadar API when we make req below
-                             //    //     var wait = ms => new Promise((r, j)=>setTimeout(r, ms));
-                             //    //     (async () => {
-                             //    //         await wait(1000);
-
-                             //    //         const previousScoreOptions = {
-                             //    //             hostname: SPORTS_RADAR_API_BASE_URL,
-                             //    //             path: '/nba/trial/v7/en/games/'+gameID+'/boxscore.json?api_key='+SPORTS_RADAR_NBA_API_KEY,
-                             //    //             method: 'GET'
-                             //    //         }
-
-                             //    //         const previousScoreReq = https.request(previousScoreOptions, (res) => {
-                             //    //             console.log('nba recent score statusCode: ', res.statusCode);
-
-                             //    //             let chunks = [];
-
-                             //    //              res.on('data', function (d) {
-                                                                    
-                             //    //                 // append to that array
-                             //    //                 chunks.push(d);
-
-                             //    //             }).on('end', function () {
-                             //    //                 let d = Buffer.concat(chunks);
-                             //    //                 let gameData = JSON.parse(d.toString())
-
-                                                
-
-                             //    //                 homeScore = gameData.home.points;
-                             //    //                 awayScore = gameData.away.points;
-
-                             //    //                 let higherScore = homeScore > awayScore? homeScore: awayScore;
-                             //    //                 let lowerScore = homeScore < awayScore? homeScore: awayScore;
-                             //    //                 let newsQueryString = home.name.split(' ')[home.name.split(' ').length-1]+'+'+away.name.split(' ')[away.name.split(' ').length-1]+'+'+higherScore+'-'+lowerScore;
-
-                                                
-
-
-                             //    //                 request({
-                             //    //                          "url": `${GOOGLE_NEWS_API_BASE_URL}everything?apiKey=${GOOGLE_NEWS_API_KEY}&q=`+newsQueryString,
-                             //    //                          "method": "GET"
-                             //    //                      }, (err, res, body) => {
-
-                             //    //                         let articles = JSON.parse(body).articles;
-                             //    //                         let numArticles = articles.length;
-
-                             //    //                          if (numArticles > 0) {
-
-                             //    //                             for (var i =0; i < numArticles; i++) {
-
-                             //    //                                 if (articles[i].title && articles[i].description && articles[i].content && (articles[i].title.includes(higherScore+"-"+lowerScore) || articles[i].description.includes(higherScore+"-"+lowerScore) ||
-                             //    //                                     articles[i].content.includes(higherScore+"-"+lowerScore))) {
-                                                                    
-
-                             //    //                                     // ***************** TO DO: FORMAT THIS NICELY SO PRINTS PRETTY IN CONSOLE ***************** //
-                             //    //                                     console.log(articles[i]);
-                             //    //                                 }
-
-                             //    //                             }
-           
-                                                            
-                             //    //                         } else {
-                             //    //                             console.log("\n\n"+"Hmm...I'm pretty dumb so I didn't find anything recent on the ".white.bold.bgRed+team.white.bold.bgRed+". Try asking Google!".white.bold.bgRed+"\n\n");
-                             //    //                         }
-                                                    
-                             //    //                          if (err){
-                             //    //                              console.log("News API Error: ", err);
-                             //    //                          }
-                             //    //                 });
-
-
-                             //    //             });
-
-
-                             //    //         });
-
-                             //    //         previousScoreReq.on('error', (e) => {
-                             //    //             console.log(e);
-                             //    //         });
-
-                             //    //         previousScoreReq.end();
-
-
-                             //    //     })();
-
-                             //    // } else if (queryType==="howAreTheBlankDoing") {
-
-                             //    //     /* Get Standings Information*/
-                             //    //     console.log('getting nba standings info for the '+team)
-
-
-                             //    // }
-
-
-                             // }
+                             }
 
                         });
 
@@ -952,8 +854,46 @@ function getNBAScoresOrStandings(team, queryType) {
                                             let losses = east.divisions[i].teams[j].losses;
 
 
+                                            request({
+                                             "url": `${GOOGLE_NEWS_API_BASE_URL}everything?apiKey=${GOOGLE_NEWS_API_KEY}&q=`+team+'+'+wins+'-'+losses+'&sortBy=publishedAt',
+                                             "method": "GET"
+                                            }, (err, res, body) => {
 
-                                            console.log("The "+team+" are on a "+streakLength+"-game "+streakType+" streak and stand at "+wins+"-"+losses+" on the season.");
+                                                let articles = JSON.parse(body).articles;
+                                                let numArticles = articles.length;
+
+                                                if (numArticles > 0) {
+
+                                                    for (var i =0; i < numArticles; i++) {
+
+                                                        if ((articles[i].title.includes(team)) &&
+
+                                                            (articles[i].title.includes(wins+'-'+losses) || articles[i].description.includes(wins+'-'+losses) ||
+                                                            articles[i].content.includes(wins+'-'+losses)) || 
+                                                            
+                                                            (articles[i].description.includes(team) ||
+                                                            articles[i].content.includes(team))) {
+
+                                                            console.log(articles[i]);
+
+
+                                                        }
+
+                                                    }
+                                                    console.log("The "+team+" are on a "+streakLength+"-game "+streakType+" streak and stand at "+wins+"-"+losses+" on the season.");
+
+
+                                                } else {
+                                                    console.log("\n\n"+"Hmm...I'm pretty dumb so I didn't find anything recent on the ".white.bold.bgRed+team.white.bold.bgRed+". Try asking Google!".white.bold.bgRed+"\n\n");
+                                                     
+                                                }
+                    
+                                                if (err){
+                                                    console.log("News API Error: ", err);
+                                                }
+
+
+                                            });
 
                                         } else if (west.divisions[i].teams[j].name.includes(team)) {
                                                 let streakType = west.divisions[i].teams[j].streak.type==="loss"? "losing" : "winning";
@@ -962,10 +902,48 @@ function getNBAScoresOrStandings(team, queryType) {
                                                 let wins = west.divisions[i].teams[j].wins;
                                                 let losses = west.divisions[i].teams[j].losses;
 
+                                                request({
+                                                 "url": `${GOOGLE_NEWS_API_BASE_URL}everything?apiKey=${GOOGLE_NEWS_API_KEY}&q=`+team+'+'+wins+'-'+losses+'&sortBy=publishedAt',
+                                                 "method": "GET"
+                                                }, (err, res, body) => {
+
+                                                    let articles = JSON.parse(body).articles;
+                                                    let numArticles = articles.length;
+
+                                                    if (numArticles > 0) {
+
+                                                        for (var i =0; i < numArticles; i++) {
+
+                                                            if ((articles[i].title.includes(team)) &&
+
+                                                                (articles[i].title.includes(wins+'-'+losses) || articles[i].description.includes(wins+'-'+losses) ||
+                                                                articles[i].content.includes(wins+'-'+losses)) || 
+                                                                
+                                                                (articles[i].description.includes(team) ||
+                                                                articles[i].content.includes(team))) {
+
+                                                                console.log(articles[i]);
 
 
+                                                            }
 
-                                                console.log("The "+team+" are on a "+streakLength+"-game "+streakType+" streak and stand at "+wins+"-"+losses+" on the season.");
+                                                        }
+                                                        console.log("The "+team+" are on a "+streakLength+"-game "+streakType+" streak and stand at "+wins+"-"+losses+" on the season.");
+
+
+                                                    } else {
+                                                        console.log("\n\n"+"Hmm...I'm pretty dumb so I didn't find anything recent on the ".white.bold.bgRed+team.white.bold.bgRed+". Try asking Google!".white.bold.bgRed+"\n\n");
+                                                         
+                                                    }
+                        
+                                                    if (err){
+                                                        console.log("News API Error: ", err);
+                                                    }
+
+
+                                                });
+
+
 
                                         }
 
@@ -992,7 +970,7 @@ function getNBAScoresOrStandings(team, queryType) {
                     })();
 
             }
-            
+
         });
 
 
@@ -1647,8 +1625,46 @@ function getNFLStandings(team, currYear) {
                             let losses = afc.divisions[i].teams[j].losses;
 
 
+                            request({
+                                     "url": `${GOOGLE_NEWS_API_BASE_URL}everything?apiKey=${GOOGLE_NEWS_API_KEY}&q=`+team+'+'+wins+'-'+losses+'&sortBy=publishedAt',
+                                     "method": "GET"
+                                    }, (err, res, body) => {
 
-                            console.log("The "+team+" are on a "+streakLength+"-game "+streakType+" streak and stand at "+wins+"-"+losses+" on the season.");
+                                        let articles = JSON.parse(body).articles;
+                                        let numArticles = articles.length;
+
+                                        if (numArticles > 0) {
+
+                                            for (var i =0; i < numArticles; i++) {
+
+                                                if ((articles[i].title.includes(team)) &&
+
+                                                    (articles[i].title.includes(wins+'-'+losses) || articles[i].description.includes(wins+'-'+losses) ||
+                                                    articles[i].content.includes(wins+'-'+losses)) || 
+
+                                                    (articles[i].description.includes(team) ||
+                                                    articles[i].content.includes(team))) {
+
+                                                    console.log(articles[i]);
+
+
+                                                }
+
+                                            }
+                                            console.log("The "+team+" are on a "+streakLength+"-game "+streakType+" streak and stand at "+wins+"-"+losses+" on the season.");
+
+
+                                        } else {
+                                            console.log("\n\n"+"Hmm...I'm pretty dumb so I didn't find anything recent on the ".white.bold.bgRed+team.white.bold.bgRed+". Try asking Google!".white.bold.bgRed+"\n\n");
+                                             
+                                        }
+            
+                                        if (err){
+                                            console.log("News API Error: ", err);
+                                        }
+
+
+                                    });
 
                         } else if (nfc.divisions[i].teams[j].name.includes(team)) {
                                 let streakType = nfc.divisions[i].teams[j].streak.type==="loss"? "losing" : "winning";
@@ -1657,10 +1673,49 @@ function getNFLStandings(team, currYear) {
                                 let wins = nfc.divisions[i].teams[j].wins;
                                 let losses = nfc.divisions[i].teams[j].losses;
 
+                                request({
+                                     "url": `${GOOGLE_NEWS_API_BASE_URL}everything?apiKey=${GOOGLE_NEWS_API_KEY}&q=`+team+'+'+wins+'-'+losses+'&sortBy=publishedAt',
+                                     "method": "GET"
+                                    }, (err, res, body) => {
+
+                                        let articles = JSON.parse(body).articles;
+                                        let numArticles = articles.length;
+
+                                        if (numArticles > 0) {
+
+                                            for (var i =0; i < numArticles; i++) {
+
+                                                if ((articles[i].title.includes(team)) &&
+
+                                                    (articles[i].title.includes(wins+'-'+losses) || articles[i].description.includes(wins+'-'+losses) ||
+                                                    articles[i].content.includes(wins+'-'+losses)) || 
+                                                    
+                                                    (articles[i].description.includes(team) ||
+                                                    articles[i].content.includes(team))) {
+
+                                                    console.log(articles[i]);
 
 
+                                                }
 
-                                console.log("The "+team+" are on a "+streakLength+"-game "+streakType+" streak and stand at "+wins+"-"+losses+" on the season.");
+                                            }
+                                            console.log("The "+team+" are on a "+streakLength+"-game "+streakType+" streak and stand at "+wins+"-"+losses+" on the season.");
+
+
+                                        } else {
+                                            console.log("\n\n"+"Hmm...I'm pretty dumb so I didn't find anything recent on the ".white.bold.bgRed+team.white.bold.bgRed+". Try asking Google!".white.bold.bgRed+"\n\n");
+                                             
+                                        }
+            
+                                        if (err){
+                                            console.log("News API Error: ", err);
+                                        }
+
+
+                                    });
+
+
+                                
 
                         }
 
@@ -1755,41 +1810,6 @@ function getPrevWeekScore(team, schedule, prevWeek) {
                      console.log("News API Error: ", err);
                  }
             });
-
-            // Respond according to how big the win/loss was
-            // if (teamScore >= opposingScore + 14) {
-
-            //     console.log("The "+teamName+" TOTALLY SMACKED the "+opposingName+" by a score of "+teamScore+" to "+opposingScore+" "+dateInfo+"!!!");
-
-            // } else if (teamScore >= opposingScore + 10 && teamScore < opposingScore + 14) {
-
-            //     console.log("The "+teamName+" handily beat the "+opposingName+" "+teamScore+" to "+opposingScore+" "+dateInfo+".");
-
-            // } else if (teamScore >= opposingScore + 7 && teamScore < opposingScore + 10) {
-
-            //     console.log("The "+teamName+" eeked out a "+teamScore+" to "+opposingScore+" win over the "+opposingName+" "+dateInfo+".")
-
-            // } else if (teamScore + 14 <= opposingScore) {
-
-            //     console.log("The "+teamName+" got DEMOLISHED the "+opposingName+" by a score of "+opposingScore+" to "+teamScore+" "+dateInfo+". Sucks to suck!!!");
-
-            // } else if (teamScore + 10 <= opposingScore && teamScore > opposingScore + 14) {
-
-
-            //     console.log("The "+teamName+" lost to the "+opposingName+" "+opposingScore+" to "+teamScore+" "+dateInfo+".");
-
-
-            // } else if (teamScore + 7 <= opposingScore && teamScore > opposingScore + 10) {
-
-
-            //     console.log("The "+teamName+" fell short to the "+opposingName+" in a close "+opposingScore+" to "+teamScore+" loss"+" "+dateInfo+".");
-
-            // } else {
-
-
-            //     console.log("The "+teamName+" were on the losing end of a nail-biter to the "+opposingName+" with a final score of "+opposingScore+" to "+teamScore+" "+dateInfo+".");
-
-            // }
 
 
         }
@@ -2394,12 +2414,6 @@ function getTheLatest(data, queryType) {
             
 
         }
-        
-
-
-
-
-
 
 
     }
